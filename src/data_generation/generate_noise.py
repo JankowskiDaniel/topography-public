@@ -1,20 +1,24 @@
-from typing import List, Tuple
+import os
+from typing import List, Optional, Tuple
+
 import cv2
 import numpy as np
-import random
+import numpy.typing as npt
+import pkg_resources
 from tqdm import tqdm
 
-import os
-import pkg_resources
+from data_generation.generate_utils import save2directory, save2zip
 
-from src.data.generate_utils import save2directory, save2zip
 
 def _check_args(num_images: int, num_used_raw_image: int):
     if num_images <= 0:
         raise ValueError("Number of generated images must be grater than 0.")
     if num_used_raw_image <= 20:
-        raise ValueError("Number of images used to extract noise must be greater than 20.")
-    
+        raise ValueError(
+            "Number of images used to extract noise must be greater than 20."
+        )
+
+
 def count_available_raw_images(path_to_raw: str) -> int:
     """Count how many raw images are available in given directory. If path_to_raw was not passed into the function, 
     package by default has 300 raw images installed itself, therefore function return 300 in case where that parameter is None.   
@@ -27,10 +31,22 @@ def count_available_raw_images(path_to_raw: str) -> int:
     """
     if path_to_raw is None:
         return 300
-    return len([name for name in os.listdir(path_to_raw) if os.path.isfile(os.path.join(path_to_raw, name))])
+    return len(
+        [
+            name
+            for name in os.listdir(path_to_raw)
+            if os.path.isfile(os.path.join(path_to_raw, name))
+        ]
+    )
 
 
-def generate_noise_image(size: Tuple[int, int] = (640, 480), num_used_raw_images: int=100, path_to_raw: str=None, used_raw_images: np.array = None, seed: int=None) -> np.array:
+def generate_noise_image(
+    size: Tuple[int, int] = (640, 480),
+    num_used_raw_images: int = 100,
+    path_to_raw: Optional[str] = None,
+    used_raw_images: Optional[npt.NDArray[np.uint8]] = None, # type: ignore
+    seed: Optional[int] = None,
+) -> npt.NDArray[np.uint8]:
     """Generate single noise image. The function is given indices (filenames) of raw images used for extraction. In case of generating single noise image (by this function)
     there is no need to parse argument with raw images filenames, the list of raw images will be automatically produced
 
@@ -47,40 +63,46 @@ def generate_noise_image(size: Tuple[int, int] = (640, 480), num_used_raw_images
     :return: Noise image
     :rtype: np.array
     """
-    
+
     # this part is used only when we generate single noise image by this function and we don't use generate_noise_dataset function. TODO: For sure it's require review and optimization.
     if used_raw_images is None and path_to_raw is None:
         if seed is not None:
             np.random.seed(seed)
-        used_raw_images = np.random.randint(0, 300, num_used_raw_images)
+        used_raw_images = np.random.randint(0, 300, num_used_raw_images) # type: ignore
     if used_raw_images is None and path_to_raw is not None:
         if seed is not None:
             np.random.seed(seed)
         available_raw_images = count_available_raw_images(path_to_raw)
-        used_raw_images = np.random.randint(0, available_raw_images, num_used_raw_images)
-        
+        used_raw_images = np.random.randint( # type: ignore
+            0, available_raw_images, num_used_raw_images
+        )
+
     noise_image = np.zeros(size[::-1])
     for _ in range(num_used_raw_images):
         # in case where path to raw images is not passed, read sample raw images from package (available only if you installed package via pip)
         if path_to_raw:
-            raw_filename = f"{path_to_raw}/{str(used_raw_images[_]).zfill(5)}.png"
+            raw_filename = f"{path_to_raw}/{str(used_raw_images[_]).zfill(5)}.png" # type: ignore
         else:
-            raw_filename = pkg_resources.resource_filename(__name__, f"/samples/raw/{str(used_raw_images[_]).zfill(5)}.png") 
+            raw_filename = pkg_resources.resource_filename(
+                __name__, f"/samples/raw/{str(used_raw_images[_]).zfill(5)}.png" # type: ignore
+            )
         img = cv2.imread(raw_filename)
-        img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)[:,:,0]
-        noise_image = (noise_image+img)
-    noise_image = noise_image/num_used_raw_images
+        img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)[:, :, 0]
+        noise_image = noise_image + img
+    noise_image = noise_image / num_used_raw_images
     return noise_image.astype(np.uint8)
 
 
-def generate_noise_dataset( path: str,
-                            size: Tuple[int, int] = (640, 480),
-                            num_images: int=50, 
-                            num_used_raw_images: int=100, 
-                            path_to_raw: str=None,
-                            zipfile: bool=False,
-                            zip_filename: str=None,
-                            seed: int=None) -> None:
+def generate_noise_dataset(
+    path: str,
+    size: Tuple[int, int] = (640, 480),
+    num_images: int = 50,
+    num_used_raw_images: int = 100,
+    path_to_raw: str = "",
+    zipfile: bool = False,
+    zip_filename: str = "",
+    seed: Optional[int] = None,
+) -> None:
     """Create noise dataset. The way how seed work is as follows:
         1. We count how many raw images are available. If path_to_raw was not passed (available only when you installed package via pip)
             then this number is equal to 300 (package has 300 raw images installed, something like example datasets in scikit-learn).
@@ -108,24 +130,33 @@ def generate_noise_dataset( path: str,
     :type seed: int, optional
     """
     _check_args(num_images, num_used_raw_images)
-    
-    raw_images_needed = num_images*num_used_raw_images
+
+    raw_images_needed = num_images * num_used_raw_images
     available_raw_images = count_available_raw_images(path_to_raw)
-    
+
     if seed is not None:
         np.random.seed(seed)
-    selected_raw_images = np.random.randint(0, available_raw_images, size=raw_images_needed) # all raw images selected for noise extraction
-    
-    raw_images_per_frame = np.split(selected_raw_images, num_images) #raw images per one noise image
-    
+    selected_raw_images = np.random.randint(
+        0, available_raw_images, size=raw_images_needed
+    )  # all raw images selected for noise extraction
+
+    raw_images_per_frame = np.split(
+        selected_raw_images, num_images
+    )  # raw images per one noise image
+
     for frame in tqdm(range(num_images)):
-        noise_image = generate_noise_image(size, num_used_raw_images, path_to_raw, raw_images_per_frame[frame])
+        noise_image = generate_noise_image(
+            size, num_used_raw_images, path_to_raw, raw_images_per_frame[frame]
+        )
         if zipfile:
-            save2zip(noise_image, img_filename=f"{frame}.png", filename=zip_filename, path=path)
+            save2zip(
+                noise_image,
+                img_filename=f"{frame}.png",
+                filename=zip_filename,
+                path=path,
+            )
         else:
             save2directory(noise_image, img_filename=f"{frame}.png", path=path)
-
-
 
 
 if __name__ == "__main__":

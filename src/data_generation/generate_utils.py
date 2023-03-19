@@ -1,9 +1,11 @@
-import cv2
-import numpy as np
 from zipfile import ZipFile
+
+import cv2
+import numpy.typing as npt
 from PIL import Image
 
-def save2zip(img: np.array, img_filename: str, filename: str, path:str) -> None:
+
+def save2zip(img: npt.ArrayLike, img_filename: str, filename: str, path: str) -> None:
     """Save image to the .zip file
 
     :param img: 2D array which represents an image
@@ -17,13 +19,14 @@ def save2zip(img: np.array, img_filename: str, filename: str, path:str) -> None:
     """
     zip_path = filename
     if path:
-        zip_path = path+filename
+        zip_path = path + filename
 
     _, encoded_image = cv2.imencode(".png", img)
     with ZipFile(zip_path, "a") as zip:
         zip.writestr(img_filename, encoded_image.tobytes())
-        
-def save2directory(img: np.array, img_filename: str, path: str) -> None:
+
+
+def save2directory(img: npt.ArrayLike, img_filename: str, path: str) -> None:
     """Save image to the directory
 
     :param img: 2D array which represents an image
@@ -33,5 +36,5 @@ def save2directory(img: np.array, img_filename: str, path: str) -> None:
     :param path: Path to the output directory
     :type path: str
     """
-    img = Image.fromarray(img)
-    img.save(path+img_filename)
+    image: Image = Image.fromarray(img)
+    image.save(path + img_filename)
