@@ -5,7 +5,7 @@ import numpy as np
 import numpy.typing as npt
 import pkg_resources
 
-from data_generation._models import ImageDetails
+from src.data_generation._models import ImageDetails
 
 
 def _check_image(
@@ -49,6 +49,7 @@ def generate_pure_image(
     :return: 2D array which represents pure image
     :rtype: np.array
     """
+    _check_image(size, epsilon, ring_center, brightness, noise_file_index=5)
     width, height = size
     min_brightness, max_brightness = brightness
 
