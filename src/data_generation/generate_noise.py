@@ -7,7 +7,7 @@ from tqdm import tqdm
 import os
 import pkg_resources
 
-from src.data.generate_utils import save2directory, save2zip
+from generate_utils import save2directory, save2zip
 
 def _check_args(num_images: int, num_used_raw_image: int):
     if num_images <= 0:
@@ -57,19 +57,35 @@ def generate_noise_image(size: Tuple[int, int] = (640, 480), num_used_raw_images
         if seed is not None:
             np.random.seed(seed)
         available_raw_images = count_available_raw_images(path_to_raw)
+        print("available_raw_images",available_raw_images)
         used_raw_images = np.random.randint(0, available_raw_images, num_used_raw_images)
-        
+    raw_filenames = os.listdir(path_to_raw)
     noise_image = np.zeros(size[::-1])
     for _ in range(num_used_raw_images):
         # in case where path to raw images is not passed, read sample raw images from package (available only if you installed package via pip)
         if path_to_raw:
-            raw_filename = f"{path_to_raw}/{str(used_raw_images[_]).zfill(5)}.png"
+            raw_filename = path_to_raw + raw_filenames[_]
         else:
-            raw_filename = pkg_resources.resource_filename(__name__, f"/samples/raw/{str(used_raw_images[_]).zfill(5)}.png") 
+            raw_filename = pkg_resources.resource_filename(
+                __name__, f"/samples/raw/{str(used_raw_images[_]).zfill(5)}.png")
         img = cv2.imread(raw_filename)
         img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)[:,:,0]
         noise_image = (noise_image+img)
-    noise_image = noise_image/num_used_raw_images
+
+    ## Daniel's method
+    # noise_image = np.zeros(size[::-1])
+    # for _ in range(num_used_raw_images):
+    #     # in case where path to raw images is not passed, read sample raw images from package (available only if you installed package via pip)
+    #     if path_to_raw:
+    #         print("------------",f"{path_to_raw}{str(used_raw_images[_]).zfill(5)}.png")
+    #         raw_filename = f"{path_to_raw}{str(used_raw_images[_]).zfill(5)}.png"
+    #     else:
+    #         raw_filename = pkg_resources.resource_filename(__name__, f"/samples/raw/{str(used_raw_images[_]).zfill(5)}.png") 
+    #     img = cv2.imread(raw_filename)
+    #     print(img.shape, '----------------')
+    #     img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)[:,:,0]
+    #     noise_image = (noise_image+img)
+    # noise_image = noise_image/num_used_raw_images
     return noise_image.astype(np.uint8)
 
 
@@ -129,4 +145,5 @@ def generate_noise_dataset( path: str,
 
 
 if __name__ == "__main__":
+    
     pass

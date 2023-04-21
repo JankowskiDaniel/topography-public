@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 from typing import Tuple
 import pkg_resources
-
-from src.data._models import ImageDetails
+import random
+from _models import ImageDetails
 
 def _check_image(size: Tuple[int, int], epsilon: float, ring_center: Tuple[int, int], brightness: Tuple[int, int], noise_file_index) -> None:
     width, height = size
@@ -68,12 +68,64 @@ def add_noise_to_image(pure_image: np.array, noise: np.array) -> np.array:
     noised_image = np.clip(noised_image, 0, 255)
     return noised_image
 
+
+def draw_blobs(img, SPRAY_PARTICLES = None,SPRAY_DIAMETER = None, fringes_color = None, range_of_blobs = (30,40)):
+    """Add air brush blubs noise to the pure image
+
+    :param img: 2D array which represents pure image
+    :SPRAY_DIAMETER: density of the brush (number of dots)
+    :SPRAY_PARTICLES: size of the brush 
+    :fringes_color: the maximum brightness of the pixel, when we can concider that this pixel belongs to the black fringe
+    :no_of_blobs: number of blobs per every image
+    
+    """
+    n_of_blobs = random.randint(*range_of_blobs)
+    i = 0
+    w,h = img.shape[0],img.shape[1]
+    m_x, m_y = w/2,h/2
+
+    if SPRAY_PARTICLES == None:
+       SPRAY_PARTICLES = w*h/150 #640,480 => 2048
+    if SPRAY_DIAMETER == None:
+        SPRAY_DIAMETER = int((w+h)/100) #640, 480 =>2048
+    if fringes_color == None:
+        fringes_color = np.min(img) + 10 #80 => 90
+        
+    while i < n_of_blobs:
+        x=int(random.gauss(m_x,m_x))
+        while x>=w or x<0:
+            x=int(random.gauss(m_x,m_x))
+
+        y=int(random.gauss(m_y,m_y))
+        while y>=h or y<0:
+           y=int(random.gauss(m_y,m_y))
+
+        color = np.asscalar(img[x][y])
+        if color<90:
+            i+=1
+            pass
+        else:
+            continue
+        
+        coef  = (1-np.sqrt(((x - m_x)/w)**2 + ((y - m_y)/h)**2))
+        blob_size = SPRAY_DIAMETER*coef
+        blob_density = int(SPRAY_PARTICLES*coef)
+
+        for n in range(blob_density):
+                xo = int(random.gauss(x, blob_size))
+                yo = int(random.gauss(y, blob_size))
+                if not(( xo >= img.shape[0]) or (yo >= img.shape[1])):
+                    img[xo,yo]= int((img[xo,yo]+color)/2)
+    return img
+
+
 def generate_image(epsilon: float,
                    size: Tuple[int, int]=(640, 480),
                    ring_center: Tuple[int, int]=(320, 240),
                    brightness: Tuple[int, int]=(80, 210),
                    noise_path: str=None,
-                   noise_file_index: int=0
+                   noise_file_index: int=0,
+                   pure_image = None,
                     ) -> np.array:
     """Generate the image. In case of generating single image (using this function) you don't have to pass noise_path argument only if you use this code as a package.
     If you didn't install it via pip, you have to pass the argument noise_path. It is assumed that noise images in you directory are named with integers started from
@@ -98,8 +150,8 @@ def generate_image(epsilon: float,
     """
     _check_image(size, epsilon, ring_center, brightness, noise_file_index)
     
-    
-    pure_image = generate_pure_image(size, epsilon, ring_center, brightness)
+    if pure_image == None:
+        pure_image = generate_pure_image(size, epsilon, ring_center, brightness)
     if noise_path:
         noise_image_filename = f"{noise_path}{noise_file_index}.png"
     else:
@@ -109,8 +161,15 @@ def generate_image(epsilon: float,
     
     if ( noise_image.shape[:2] != size):
         noise_image = cv2.resize(noise_image, size, interpolation=cv2.INTER_AREA)
-    noised_image = add_noise_to_image(pure_image, noise_image)
+
+    blob_image = draw_blobs(pure_image)
+
+    noised_image = add_noise_to_image(blob_image, noise_image)
+
     return noised_image.astype(np.uint8)
 
 if __name__ == "__main__":
-    pass
+    # img = generate_pure_image((640,480),0.3,(320,240), (80, 210))
+    # x = cv2.imwrite("./src/img.png",img)
+    # generate_image(0.3, pure_image = None)
+    pass    
