@@ -4,6 +4,7 @@ from typing import Tuple
 import pkg_resources
 import random
 from _models import ImageDetails
+from pizza_noise import pizza_noise
 
 def _check_image(size: Tuple[int, int], epsilon: float, ring_center: Tuple[int, int], brightness: Tuple[int, int], noise_file_index) -> None:
     width, height = size
@@ -164,7 +165,9 @@ def generate_image(epsilon: float,
 
     blob_image = draw_blobs(pure_image)
 
-    noised_image = add_noise_to_image(blob_image, noise_image)
+    pizza_image = pizza_noise(blob_image, channels=1, nr_of_pizzas=[3,4], center_point=ring_center)
+
+    noised_image = add_noise_to_image(pizza_image, noise_image)
 
     return noised_image.astype(np.uint8)
 
