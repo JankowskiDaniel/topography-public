@@ -5,6 +5,7 @@ import pkg_resources
 import random
 from _models import ImageDetails
 from pizza_noise import pizza_noise
+from blackbox_noise import blackbox_noise
 
 def _check_image(size: Tuple[int, int], epsilon: float, ring_center: Tuple[int, int], brightness: Tuple[int, int], noise_file_index) -> None:
     width, height = size
@@ -101,7 +102,8 @@ def draw_blobs(img, SPRAY_PARTICLES = None,SPRAY_DIAMETER = None, fringes_color 
         while y>=h or y<0:
            y=int(random.gauss(m_y,m_y))
 
-        color = np.asscalar(img[x][y])
+        color = int(img[x][y])
+        
         if color<90:
             i+=1
             pass
@@ -163,13 +165,15 @@ def generate_image(epsilon: float,
     if ( noise_image.shape[:2] != size):
         noise_image = cv2.resize(noise_image, size, interpolation=cv2.INTER_AREA)
 
-    blob_image = draw_blobs(pure_image)
+    image = draw_blobs(pure_image)
 
-    pizza_image = pizza_noise(blob_image, channels=1, nr_of_pizzas=[3,4], center_point=ring_center)
+    image = pizza_noise(image, channels=1, nr_of_pizzas=[2,3], center_point=ring_center)
 
-    noised_image = add_noise_to_image(pizza_image, noise_image)
+    image = add_noise_to_image(image, noise_image)
 
-    return noised_image.astype(np.uint8)
+    image = blackbox_noise(image)
+
+    return image.astype(np.uint8)
 
 if __name__ == "__main__":
     # img = generate_pure_image((640,480),0.3,(320,240), (80, 210))

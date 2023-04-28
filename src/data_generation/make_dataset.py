@@ -24,12 +24,18 @@ def main(input_filepath=None, output_filepath=None):
     raw = str(project_dir.joinpath(PurePath("data/raw"))) + os.sep
     noise = str(project_dir.joinpath(PurePath("data/noise"))) + os.sep
     processed = str(project_dir.joinpath(PurePath("data/processed"))) + os.sep
+    
+    if not Path(noise).exists():
+        Path(noise).mkdir()
+        generate_noise_dataset(path=noise, path_to_raw=raw, seed=23)
+    else:
+        print('Noise already exists!')
 
-    print(noise)
-
-    # generate_noise_dataset(path=noise, path_to_raw=raw, seed=23)
-    generate_balanced_dataset(path=processed, n_copies=1, noise_path=noise, seed=23)
-
+    if not Path(processed).exists():
+        Path(processed).mkdir()
+        generate_balanced_dataset(path=processed, n_copies=1, noise_path=noise, seed=23)
+    else:
+        print('Dataset already exists!')
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

@@ -84,7 +84,7 @@ def pizza_noise(img: np.ndarray, nr_of_pizzas: list[int,int] =[5,5], center_poin
 
     for shape in full_shapes:
         add = random.randint(0, 1)
-        strength = random.randint(5, 10)
+        strength = random.randint(10, 15)
         img = change_region(img, np.array(shape), add=add, strenght=strength, channels=channels)
 
     return img
