@@ -4,11 +4,11 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
+from AbstractImage  import generate_pure_image
 from tqdm import tqdm
 
-from data_generation._models import ImageDetails
-from data_generation.generate_image import generate_image
-from data_generation.generate_utils import save2directory, save2zip
+from _models import ImageDetails
+from generate_utils import save2directory, save2zip
 
 
 def _check_args(
@@ -138,13 +138,12 @@ def generate_balanced_dataset(
         for _ in range(n_copies):
             ring_center = (width_centers[img_index], height_centers[img_index])
 
-            img = generate_image(
+            #There is no noise added here.
+            img = generate_pure_image(
                 _epsilon,
                 size,
                 ring_center,
-                brightness,
-                noise_path,
-                choosen_noises[img_index],
+                brightness
             )
             img_filename = f"{str(img_index).zfill(5)}.png"
 
