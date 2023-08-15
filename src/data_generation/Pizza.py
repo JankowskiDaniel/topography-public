@@ -1,23 +1,27 @@
-from AbstractDecorator import AbstractDecorator
-from AbstractImage import AbstractImage
 import random
+
 import cv2
 import numpy as np
+import numpy.typing as npt
+from AbstractDecorator import AbstractDecorator
+from AbstractImage import AbstractImage
 
 
-def change_region(img, pts, channels = 3, add=True, strenght = 10):
-    img_copy = img.copy() 
+def change_region(img, pts, channels=3, add=True, strenght=10):
+    img_copy = img.copy()
     x, y, w, h = cv2.boundingRect(pts)
     pts = pts - np.array([x, y])
 
     mask = np.zeros((h, w), dtype=np.uint8)
     mask = cv2.fillConvexPoly(mask, pts, (255, 255, 255))
-    mask = cv2.merge([mask]*channels)
+    mask = cv2.merge([mask] * channels)
     inversed_mask = cv2.bitwise_not(mask)
-    
-    image_rect = img_copy[y:y+h, x:x+w]
-    
-    change = np.random.randint(4,size=image_rect.shape, dtype=np.uint8)*strenght
+
+    image_rect = img_copy[y: y + h, x: x + w]
+
+    change = (
+        np.random.randint(4, size=image_rect.shape, dtype=np.uint8) * strenght
+    )
     if add:
         image_rect_changed = cv2.add(image_rect, change)
     else:
@@ -28,19 +32,21 @@ def change_region(img, pts, channels = 3, add=True, strenght = 10):
 
     full_rect = cv2.add(image_rect_masked, image_rect_unmasked)
 
-    img_copy[y:y+h, x:x+w] = full_rect
+    img_copy[y: y + h, x: x + w] = full_rect
     return img_copy
+
 
 def from_distance_to_point(distance, w, h):
     if distance // w == 0:
-        return [distance, 0], 'top'
-    elif distance // (w+h-1) == 0:
-        return [w-1, distance % (w-1)], 'right'
-    elif distance // (2*w+h-2) == 0:
-        return [w-1 - distance % (w+h-2), h-1], 'bottom'
+        return [distance, 0], "top"
+    elif distance // (w + h - 1) == 0:
+        return [w - 1, distance % (w - 1)], "right"
+    elif distance // (2 * w + h - 2) == 0:
+        return [w - 1 - distance % (w + h - 2), h - 1], "bottom"
     else:
-        return [0, h-1 - distance % (2*w+h-3)], 'left'
-    
+        return [0, h - 1 - distance % (2 * w + h - 3)], "left"
+
+
 def corner_point_if_feasible(pts):
     p1, p2 = pts
     if p1[1] == p2[1]:
@@ -49,17 +55,24 @@ def corner_point_if_feasible(pts):
         return [p2[0][0], p1[0][1]]
     else:
         return [p1[0][0], p2[0][1]]
-    
 
-def pizza_noise(img: np.ndarray, nr_of_pizzas: list[int,int] =[5,5], center_point: list[int,int] = [320,240], channels: int = 3):
-    '''
-    Randomly brightens or darkens triangular areas of the image starting in the center. 
+
+def pizza_noise(
+    img: np.ndarray,
+    nr_of_pizzas: list[int] = [5, 5],
+    center_point: list[int] = [320, 240],
+    channels: int = 3,
+):
+    """
+    Randomly brightens or darkens triangular areas of the
+    image starting in the center.
 
     ---
 
     Attributes:
     * img (numpy.ndarray): input image
-    * nr_of_pizzas (list[int,int]): a list containing the minisigmam and maxisigmam number of modified areas
+    * nr_of_pizzas (list[int,int]): a list containing the
+    minisigmam and maxisigmam number of modified areas
     * center_point (list[int,int]): center location
     * channels (int): number of image channels
 
@@ -67,43 +80,73 @@ def pizza_noise(img: np.ndarray, nr_of_pizzas: list[int,int] =[5,5], center_poin
 
     Returns:
     * modified image (numpy.ndarray)
-    '''
+    """
     h, w = img.shape
 
-    l = 2*(h+w-2)
-    
-    random_distances = random.sample(range(l), random.randint(*nr_of_pizzas))
-    random_distances_pairs = [[random_distance, (random_distance + int(random.uniform(l//28, l//7))) % l] 
-                              for random_distance in random_distances]
+    rand_l = 2 * (h + w - 2)
 
-    random_points_pairs = [[from_distance_to_point(x,w,h), from_distance_to_point(y,w,h)] for x,y in random_distances_pairs]
+    random_distances = random.sample(
+        range(rand_l),
+        random.randint(*nr_of_pizzas)
+        )
+    random_distances_pairs = [
+        [
+            random_distance,
+            (random_distance +
+             int(random.uniform(rand_l // 28, rand_l // 7))) % rand_l,
+        ]
+        for random_distance in random_distances
+    ]
+
+    random_points_pairs = [
+        [from_distance_to_point(x, w, h), from_distance_to_point(y, w, h)]
+        for x, y in random_distances_pairs
+    ]
 
     corners = [corner_point_if_feasible(x) for x in random_points_pairs]
 
-    full_shapes = [[center_point] + [random_points_pairs[i][0][0]] + [corners[i]] + [random_points_pairs[i][1][0]] 
-                  for i in range(len(random_points_pairs))]
+    full_shapes = [
+        [center_point]
+        + [random_points_pairs[i][0][0]]
+        + [corners[i]]
+        + [random_points_pairs[i][1][0]]
+        for i in range(len(random_points_pairs))
+    ]
 
-    full_shapes = [[point for point in shape if point!=[]] for shape in full_shapes]
+    full_shapes = [
+        [point for point in shape if point != []] for shape in full_shapes
+    ]
 
     for shape in full_shapes:
         add = random.randint(0, 1)
         strength = random.randint(10, 15)
-        img = change_region(img, np.array(shape), add=add, strenght=strength, channels=channels)
+        img = change_region(
+            img, np.array(shape), add=add, strenght=strength, channels=channels
+        )
 
     return img
+
 
 class Pizza(AbstractDecorator):
     """
     Decorators can execute their behavior either before or after the call to a
     wrapped object.
     """
-    def __init__(self, component: AbstractImage, nr_of_pizzas: list[int,int] =[5,5], center_point: list[int,int] = [320,240], channels: int = 3) -> None:
+
+    def __init__(
+        self,
+        component: AbstractImage,
+        nr_of_pizzas: list[int] = [5, 5],
+        center_point: list[int] = [320, 240],
+        channels: int = 3,
+    ) -> None:
         super().__init__(component)
-        self.nr_of_pizzas=nr_of_pizzas
-        self.center_point=center_point
-        self.channels =channels 
+        self.nr_of_pizzas = nr_of_pizzas
+        self.center_point = center_point
+        self.channels = channels
 
-    def generate(self) -> str:
+    def generate(self) -> npt.NDArray[np.uint8]:
         img = self.component.generate()
-        return pizza_noise(img, self.nr_of_pizzas, self.center_point, self.channels)
-
+        return pizza_noise(
+            img, self.nr_of_pizzas, self.center_point, self.channels
+        )

@@ -5,7 +5,9 @@ import numpy.typing as npt
 from PIL import Image
 
 
-def save2zip(img: npt.ArrayLike, img_filename: str, filename: str, path: str) -> None:
+def save2zip(
+    img: npt.ArrayLike, img_filename: str, filename: str, path: str
+) -> None:
     """Save image to the .zip file
 
     :param img: 2D array which represents an image

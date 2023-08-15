@@ -1,11 +1,10 @@
-from typing import Optional, Tuple
+from abc import ABC, abstractmethod
+from typing import Tuple
 
-import cv2
 import numpy as np
 import numpy.typing as npt
-import pkg_resources
 
-from _models import ImageDetails
+from src.data_generation._models import ImageDetails
 
 
 def _check_image(
@@ -18,7 +17,7 @@ def _check_image(
     width, height = size
     width_ring_center, height_ring_center = ring_center
     min_brightness, max_brightness = brightness
-    _ = ImageDetails( # type: ignore
+    _ = ImageDetails(  # type: ignore
         width=width,
         height=height,
         epsilon=epsilon,
@@ -85,21 +84,23 @@ def generate_pure_image(
 
 
 # https://refactoring.guru/design-patterns/decorator/python/example
-class AbstractImage():
+class AbstractImage(ABC):
     """
     The base Component interface defines generates that can be altered by
     decorators.
     """
-    def __init__(self, 
-        size: Tuple[int, int]=[250,250],
+
+    def __init__(
+        self,
+        size: Tuple[int, int] = (250, 250),
         epsilon: float = 0.1,
-        ring_center: Tuple[int, int] = [130,130],
-        brightness: Tuple[int, int] = [100,210]):
+        ring_center: Tuple[int, int] = (130, 130),
+        brightness: Tuple[int, int] = (100, 210),
+    ):
         print(size, ring_center)
         self.img = generate_pure_image(size, epsilon, ring_center, brightness)
         pass
 
-    def generate(self) -> str:
-        pass
-
-
+    @abstractmethod
+    def generate(self) -> npt.NDArray[np.uint8]:
+        raise NotImplementedError
