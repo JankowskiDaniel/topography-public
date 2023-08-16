@@ -19,9 +19,8 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
 
     image_rect = img_copy[y: y + h, x: x + w]
 
-    change = (
-        np.random.randint(4, size=image_rect.shape, dtype=np.uint8) * strenght
-    )
+    change = strenght
+
     if add:
         image_rect_changed = cv2.add(image_rect, change)
     else:
@@ -59,8 +58,9 @@ def corner_point_if_feasible(pts):
 
 def pizza_noise(
     img: np.ndarray,
-    nr_of_pizzas: list[int] = [5, 5],
-    center_point: list[int] = [320, 240],
+    nr_of_pizzas: tuple[int, int] = (5, 5),
+    center_point: tuple[int, int] = (320, 240),
+    strength: tuple[int, int] = (10,15),
     channels: int = 3,
 ):
     """
@@ -71,9 +71,10 @@ def pizza_noise(
 
     Attributes:
     * img (numpy.ndarray): input image
-    * nr_of_pizzas (list[int,int]): a list containing the
-    minisigmam and maxisigmam number of modified areas
-    * center_point (list[int,int]): center location
+    * nr_of_pizzas (tuple[int,int]): a list containing the
+    minimum and maximum number of modified areas
+    * center_point (tuple[int,int]): center location
+    * strenght (int): defines how intense the change will be
     * channels (int): number of image channels
 
     ---
@@ -119,9 +120,9 @@ def pizza_noise(
 
     for shape in full_shapes:
         add = random.randint(0, 1)
-        strength = random.randint(10, 15)
+        rand_strength = random.randint(*strength)
         img = change_region(
-            img, np.array(shape), add=add, strenght=strength, channels=channels
+            img, np.array(shape), add=add, strenght=rand_strength, channels=channels
         )
 
     return img
@@ -139,14 +140,16 @@ class Pizza(AbstractDecorator):
         nr_of_pizzas: list[int] = [5, 5],
         center_point: list[int] = [320, 240],
         channels: int = 3,
+        strength: tuple[int, int] = (10,15)
     ) -> None:
         super().__init__(component)
         self.nr_of_pizzas = nr_of_pizzas
         self.center_point = center_point
         self.channels = channels
+        self.strength = strength
 
     def generate(self) -> npt.NDArray[np.uint8]:
         img = self.component.generate()
         return pizza_noise(
-            img, self.nr_of_pizzas, self.center_point, self.channels
+            img, self.nr_of_pizzas, self.center_point, self.strength, self.channels
         )

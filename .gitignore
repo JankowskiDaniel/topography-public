@@ -1,3 +1,7 @@
+# Gerenated data
+data/bubble_dataset/*
+data/pizza_dataset/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

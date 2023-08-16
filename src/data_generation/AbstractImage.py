@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from src.data_generation._models import ImageDetails
+from _models import ImageDetails
 
 
 def _check_image(
@@ -97,7 +97,6 @@ class AbstractImage(ABC):
         ring_center: Tuple[int, int] = (130, 130),
         brightness: Tuple[int, int] = (100, 210),
     ):
-        print(size, ring_center)
         self.img = generate_pure_image(size, epsilon, ring_center, brightness)
         pass
 
