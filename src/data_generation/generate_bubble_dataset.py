@@ -153,7 +153,7 @@ def generate_bubble_dataset(
 if __name__ == "__main__":
 
     generate_bubble_dataset(
-        path='data/bubble_dataset/', # trzeba ręcznie utworzyć katalog
+        path='data/datasets/bubble_dataset/', # trzeba ręcznie utworzyć katalog
         n_copies=1,
         seed=22,
         zipfile=True,

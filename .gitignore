@@ -1,6 +1,5 @@
 # Gerenated data
-data/bubble_dataset/*
-data/pizza_dataset/*
+data/datasets
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

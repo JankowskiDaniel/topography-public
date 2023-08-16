@@ -7,7 +7,7 @@ from _models import ImageDetails
 from generate_utils import save2directory, save2zip, _check_args, parameters2csv
 from tqdm import tqdm
 from Image import Image
-from Pizza import Pizza
+from BlackBox import BlackBox
 
 
 def generate_pizza_dataset(
@@ -23,8 +23,8 @@ def generate_pizza_dataset(
     save_parameters: bool = True,
     parameters_filename: str = "parameters.csv",
     seed: Optional[int] = None,
-    nr_of_pizzas: Tuple[int, int] = (3,7),
-    strength_of_pizzas: Tuple[int, int] = (10,15),
+    box_width: Tuple[int, int] = (50,150),
+    box_height: Tuple[int, int] = (30,100),
 ) -> None:
     """Generate balanced dataset and save to the output
     directory or .zip file. Noise_path argument need to be
@@ -66,12 +66,12 @@ def generate_pizza_dataset(
     :type noise_path: str, optional
     :param seed: Set seed to create identical dataset each time.
     :type seed: int, optional
-    :param nr_of_pizzas: Number of triangles imposed on the image (drawn from the specified range)
-        defaults to (3, 7)
-    :type nr_of_pizzas: Tuple[int, int], optional
-    :param strength_of_pizzas: Defines how intense the triangles will be (drawn from the specified range)
-        defaults to (10, 15)
-    :type strength_of_pizzas: Tuple[int, int], optional
+    :param box_width: Width of black box (drawn from the specified range)
+        defaults to (50, 150)
+    :type box_width: Tuple[int, int], optional
+    :param box_height: Height of black box (drawn from the specified range)
+        defaults to (30, 100)
+    :type box_height: Tuple[int, int], optional
     """
     _check_args(path, n_copies, epsilon_step, zipfile, filename)
 
@@ -113,7 +113,7 @@ def generate_pizza_dataset(
 
             # There is no noise added here.
             img = Image(size, _epsilon, ring_center, brightness)
-            img = Pizza(img, nr_of_pizzas, ring_center, 1, strength=strength_of_pizzas)
+            img = BlackBox(img, width=box_width, height=box_height)
             img = img.generate()
 
             img_filename = f"{str(img_index).zfill(5)}.png"
@@ -144,11 +144,11 @@ def generate_pizza_dataset(
 if __name__ == "__main__":
 
     generate_pizza_dataset(
-        path='data/datasets/pizza_dataset/', # trzeba ręcznie utworzyć katalog
+        path='data/datasets/blackbox_dataset/', # trzeba ręcznie utworzyć katalog
         n_copies=1,
         seed=22,
-        nr_of_pizzas=(10, 20), # warto modyfikować
-        strength_of_pizzas=(3,8), # warto modyfikować
+        box_width=(50,150), # warto modyfikować
+        box_height=(30,100), # warto modyfikować
         zipfile=True,
-        filename='pizza.zip'
+        filename='blackbox.zip'
     )

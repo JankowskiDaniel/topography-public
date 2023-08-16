@@ -4,7 +4,9 @@ from AbstractDecorator import AbstractDecorator
 from AbstractImage import AbstractImage
 
 
-def add_blackbox(img):
+def add_blackbox(img: np.ndarray,
+                width: tuple[int, int] = (50, 150),
+                height: tuple[int, int] = (30, 100),):
     """
     ---
     Attributes:
@@ -16,8 +18,8 @@ def add_blackbox(img):
     # if np.random.rand() < 0.5:
     #     return img
     h, w = img.shape
-    blackbox_w = np.random.randint(w // 10, w // 3)
-    blackbox_h = np.random.randint(h // 10, h // 3)
+    blackbox_w = np.random.randint(width[0], width[1]+1)
+    blackbox_h = np.random.randint(height[0], height[1]+1)
 
     blackbox_x = np.random.randint(0, w)
     blackbox_y = np.random.randint(0, h)
@@ -39,9 +41,13 @@ class BlackBox(AbstractDecorator):
     wrapped object.
     """
 
-    def __init__(self, component: AbstractImage) -> None:
+    def __init__(self, component: AbstractImage,
+                width: tuple[int, int] = [5, 5],
+                height: tuple[int, int] = [320, 240],) -> None:
         super().__init__(component)
+        self.width = width
+        self.height = height
 
     def generate(self) -> npt.NDArray[np.uint8]:
         img = self.component.generate()
-        return add_blackbox(img)
+        return add_blackbox(img, self.width, self.height)
