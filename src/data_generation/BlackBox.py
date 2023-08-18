@@ -32,8 +32,8 @@ def add_blackbox(
     blackbox_h = min(blackbox_h, h - blackbox_y)
 
     img[
-        blackbox_y : blackbox_y + blackbox_h,
-        blackbox_x : blackbox_x + blackbox_w,
+        blackbox_y: blackbox_y + blackbox_h,
+        blackbox_x: blackbox_x + blackbox_w,
     ] = 0
 
     return img

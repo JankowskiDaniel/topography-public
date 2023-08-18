@@ -18,7 +18,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
     mask = cv2.merge([mask] * channels)
     inversed_mask = cv2.bitwise_not(mask)
 
-    image_rect = img_copy[y : y + h, x : x + w]
+    image_rect = img_copy[y: y + h, x: x + w]
 
     change = strenght
 
@@ -32,7 +32,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
 
     full_rect = cv2.add(image_rect_masked, image_rect_unmasked)
 
-    img_copy[y : y + h, x : x + w] = full_rect
+    img_copy[y: y + h, x: x + w] = full_rect
     return img_copy
 
 
