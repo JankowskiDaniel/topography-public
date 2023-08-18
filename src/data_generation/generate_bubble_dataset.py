@@ -1,13 +1,17 @@
-import os
 import random
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from _models import ImageDetails
-from generate_utils import save2directory, save2zip, _check_args, parameters2csv
-from tqdm import tqdm
-from Image import Image
 from Bubble import Bubble
+from generate_utils import (
+    _check_args,
+    parameters2csv,
+    save2directory,
+    save2zip,
+)
+from Image import Image
+from tqdm import tqdm
 
 
 def generate_bubble_dataset(
@@ -70,15 +74,15 @@ def generate_bubble_dataset(
     :param seed: Set seed to create identical dataset each time.
     :type seed: int, optional
 
-    :param spray_particles: 
+    :param spray_particles:
     :type spray_particles: int, optional
-    :param spray_diameter: 
+    :param spray_diameter:
     :type spray_diameter: int, optional
-    :param fringes_color: 
+    :param fringes_color:
     :type fringes_color: int, optional
-    :param range_of_blobs: 
+    :param range_of_blobs:
     :type range_of_blobs: Tuple[int, int], optional
-    :param sigma: 
+    :param sigma:
     :type sigma: int, optional
     """
     _check_args(path, n_copies, epsilon_step, zipfile, filename)
@@ -121,8 +125,14 @@ def generate_bubble_dataset(
 
             # There is no noise added here.
             img = Image(size, _epsilon, ring_center, brightness)
-            img = Bubble(img, spray_particles, spray_diameter, 
-                        fringes_color, range_of_blobs, sigma)
+            img = Bubble(
+                img,
+                spray_particles,
+                spray_diameter,
+                fringes_color,
+                range_of_blobs,
+                sigma,
+            )
             img = img.generate()
 
             img_filename = f"{str(img_index).zfill(5)}.png"
@@ -142,20 +152,24 @@ def generate_bubble_dataset(
                     ring_center_height=ring_center[1],
                     min_brightness=brightness[0],
                     max_brightness=brightness[1],
-                    used_noise=-1, # dałem roboczo noise jako -1, (nie mogłem dać none) w ten sposób będzie wiadomo że avg noise nie był nałożony 
+                    used_noise=-1,
+                    # dałem roboczo noise jako -1,
+                    # (nie mogłem dać none) w ten sposób
+                    # będzie wiadomo że avg noise nie był nałożony
                 )
                 parameters.append(img_details.dict())
             img_index += 1
-        
+
     parameters2csv(parameters, path, parameters_filename)
 
 
 if __name__ == "__main__":
 
     generate_bubble_dataset(
-        path='data/datasets/bubble_dataset/', # trzeba ręcznie utworzyć katalog
+        path="data/datasets/bubble_dataset/",
+        # trzeba ręcznie utworzyć katalog
         n_copies=1,
         seed=22,
         zipfile=True,
-        filename='bubble.zip'
+        filename="bubble.zip",
     )

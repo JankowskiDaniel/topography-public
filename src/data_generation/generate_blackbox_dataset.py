@@ -1,13 +1,17 @@
-import os
 import random
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from _models import ImageDetails
-from generate_utils import save2directory, save2zip, _check_args, parameters2csv
-from tqdm import tqdm
-from Image import Image
 from BlackBox import BlackBox
+from generate_utils import (
+    _check_args,
+    parameters2csv,
+    save2directory,
+    save2zip,
+)
+from Image import Image
+from tqdm import tqdm
 
 
 def generate_pizza_dataset(
@@ -23,8 +27,8 @@ def generate_pizza_dataset(
     save_parameters: bool = True,
     parameters_filename: str = "parameters.csv",
     seed: Optional[int] = None,
-    box_width: Tuple[int, int] = (50,150),
-    box_height: Tuple[int, int] = (30,100),
+    box_width: Tuple[int, int] = (50, 150),
+    box_height: Tuple[int, int] = (30, 100),
 ) -> None:
     """Generate balanced dataset and save to the output
     directory or .zip file. Noise_path argument need to be
@@ -133,22 +137,26 @@ def generate_pizza_dataset(
                     ring_center_height=ring_center[1],
                     min_brightness=brightness[0],
                     max_brightness=brightness[1],
-                    used_noise=-1, # dałem roboczo noise jako -1, (nie mogłem dać none) w ten sposób będzie wiadomo że avg noise nie był nałożony 
+                    used_noise=-1,
+                    # dałem roboczo noise jako -1,
+                    # (nie mogłem dać none) w ten sposób
+                    # będzie wiadomo że avg noise nie był nałożony
                 )
                 parameters.append(img_details.dict())
             img_index += 1
-        
+
     parameters2csv(parameters, path, parameters_filename)
 
 
 if __name__ == "__main__":
 
     generate_pizza_dataset(
-        path='data/datasets/blackbox_dataset/', # trzeba ręcznie utworzyć katalog
+        path="data/datasets/blackbox_dataset/",
+        # trzeba ręcznie utworzyć katalog
         n_copies=1,
         seed=22,
-        box_width=(50,150), # warto modyfikować
-        box_height=(30,100), # warto modyfikować
+        box_width=(50, 150),  # warto modyfikować
+        box_height=(30, 100),  # warto modyfikować
         zipfile=True,
-        filename='blackbox.zip'
+        filename="blackbox.zip",
     )

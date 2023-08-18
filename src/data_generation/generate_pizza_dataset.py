@@ -1,13 +1,17 @@
-import os
 import random
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from _models import ImageDetails
-from generate_utils import save2directory, save2zip, _check_args, parameters2csv
-from tqdm import tqdm
+from generate_utils import (
+    _check_args,
+    parameters2csv,
+    save2directory,
+    save2zip,
+)
 from Image import Image
 from Pizza import Pizza
+from tqdm import tqdm
 
 
 def generate_pizza_dataset(
@@ -23,8 +27,8 @@ def generate_pizza_dataset(
     save_parameters: bool = True,
     parameters_filename: str = "parameters.csv",
     seed: Optional[int] = None,
-    nr_of_pizzas: Tuple[int, int] = (3,7),
-    strength_of_pizzas: Tuple[int, int] = (10,15),
+    nr_of_pizzas: Tuple[int, int] = (3, 7),
+    strength_of_pizzas: Tuple[int, int] = (10, 15),
 ) -> None:
     """Generate balanced dataset and save to the output
     directory or .zip file. Noise_path argument need to be
@@ -66,11 +70,12 @@ def generate_pizza_dataset(
     :type noise_path: str, optional
     :param seed: Set seed to create identical dataset each time.
     :type seed: int, optional
-    :param nr_of_pizzas: Number of triangles imposed on the image (drawn from the specified range)
+    :param nr_of_pizzas: Number of triangles imposed on the image
+    (drawn from the specified range)
         defaults to (3, 7)
     :type nr_of_pizzas: Tuple[int, int], optional
-    :param strength_of_pizzas: Defines how intense the triangles will be (drawn from the specified range)
-        defaults to (10, 15)
+    :param strength_of_pizzas: Defines how intense the triangles will be
+    (drawn from the specified range) defaults to (10, 15)
     :type strength_of_pizzas: Tuple[int, int], optional
     """
     _check_args(path, n_copies, epsilon_step, zipfile, filename)
@@ -113,7 +118,9 @@ def generate_pizza_dataset(
 
             # There is no noise added here.
             img = Image(size, _epsilon, ring_center, brightness)
-            img = Pizza(img, nr_of_pizzas, ring_center, 1, strength=strength_of_pizzas)
+            img = Pizza(
+                img, nr_of_pizzas, ring_center, 1, strength=strength_of_pizzas
+            )
             img = img.generate()
 
             img_filename = f"{str(img_index).zfill(5)}.png"
@@ -133,22 +140,25 @@ def generate_pizza_dataset(
                     ring_center_height=ring_center[1],
                     min_brightness=brightness[0],
                     max_brightness=brightness[1],
-                    used_noise=-1, # dałem roboczo noise jako -1, (nie mogłem dać none) w ten sposób będzie wiadomo że avg noise nie był nałożony 
+                    used_noise=-1,
+                    # dałem roboczo noise jako -1,
+                    # (nie mogłem dać none) w ten sposób
+                    # będzie wiadomo że avg noise nie był nałożony
                 )
                 parameters.append(img_details.dict())
             img_index += 1
-        
+
     parameters2csv(parameters, path, parameters_filename)
 
 
 if __name__ == "__main__":
 
     generate_pizza_dataset(
-        path='data/datasets/pizza_dataset/', # trzeba ręcznie utworzyć katalog
-        n_copies=1,
+        path="data/datasets/pizza_dataset/",  # trzeba ręcznie utworzyć katalog
+        n_copies=24,
         seed=22,
-        nr_of_pizzas=(10, 20), # warto modyfikować
-        strength_of_pizzas=(3,8), # warto modyfikować
+        nr_of_pizzas=(4, 8),  # warto modyfikować
+        strength_of_pizzas=(8, 15),  # warto modyfikować
         zipfile=True,
-        filename='pizza.zip'
+        filename="pizza.zip",
     )

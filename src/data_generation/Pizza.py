@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 
 import cv2
 import numpy as np
@@ -17,7 +18,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
     mask = cv2.merge([mask] * channels)
     inversed_mask = cv2.bitwise_not(mask)
 
-    image_rect = img_copy[y: y + h, x: x + w]
+    image_rect = img_copy[y : y + h, x : x + w]
 
     change = strenght
 
@@ -31,7 +32,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
 
     full_rect = cv2.add(image_rect_masked, image_rect_unmasked)
 
-    img_copy[y: y + h, x: x + w] = full_rect
+    img_copy[y : y + h, x : x + w] = full_rect
     return img_copy
 
 
@@ -60,7 +61,7 @@ def pizza_noise(
     img: np.ndarray,
     nr_of_pizzas: tuple[int, int] = (5, 5),
     center_point: tuple[int, int] = (320, 240),
-    strength: tuple[int, int] = (10,15),
+    strength: tuple[int, int] = (10, 15),
     channels: int = 3,
 ):
     """
@@ -87,14 +88,13 @@ def pizza_noise(
     rand_l = 2 * (h + w - 2)
 
     random_distances = random.sample(
-        range(rand_l),
-        random.randint(*nr_of_pizzas)
-        )
+        range(rand_l), random.randint(*nr_of_pizzas)
+    )
     random_distances_pairs = [
         [
             random_distance,
-            (random_distance +
-             int(random.uniform(rand_l // 28, rand_l // 7))) % rand_l,
+            (random_distance + int(random.uniform(rand_l // 28, rand_l // 7)))
+            % rand_l,
         ]
         for random_distance in random_distances
     ]
@@ -122,7 +122,11 @@ def pizza_noise(
         add = random.randint(0, 1)
         rand_strength = random.randint(*strength)
         img = change_region(
-            img, np.array(shape), add=add, strenght=rand_strength, channels=channels
+            img,
+            np.array(shape),
+            add=add,
+            strenght=rand_strength,
+            channels=channels,
         )
 
     return img
@@ -137,10 +141,10 @@ class Pizza(AbstractDecorator):
     def __init__(
         self,
         component: AbstractImage,
-        nr_of_pizzas: list[int] = [5, 5],
-        center_point: list[int] = [320, 240],
+        nr_of_pizzas: Tuple[int, int] = (5, 5),
+        center_point: Tuple[int, int] = (320, 240),
         channels: int = 3,
-        strength: tuple[int, int] = (10,15)
+        strength: tuple[int, int] = (10, 15),
     ) -> None:
         super().__init__(component)
         self.nr_of_pizzas = nr_of_pizzas
@@ -151,5 +155,9 @@ class Pizza(AbstractDecorator):
     def generate(self) -> npt.NDArray[np.uint8]:
         img = self.component.generate()
         return pizza_noise(
-            img, self.nr_of_pizzas, self.center_point, self.strength, self.channels
+            img,
+            self.nr_of_pizzas,
+            self.center_point,
+            self.strength,
+            self.channels,
         )

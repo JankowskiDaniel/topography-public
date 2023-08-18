@@ -1,11 +1,11 @@
+import os
+from typing import Dict, List
 from zipfile import ZipFile
 
 import cv2
 import numpy.typing as npt
-from PIL import Image
-from typing import Dict, List
 import pandas as pd
-import os
+from PIL import Image
 
 
 def save2zip(
@@ -41,8 +41,9 @@ def save2directory(img: npt.ArrayLike, img_filename: str, path: str) -> None:
     :param path: Path to the output directory
     :type path: str
     """
-    image: Image = Image.fromarray(img)
+    image = Image.fromarray(img)
     image.save(path + img_filename)
+
 
 def _check_args(
     path: str, n_copies: int, epsilon_step: float, zipfile: bool, filename: str
