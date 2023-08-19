@@ -1,6 +1,7 @@
 # Gerenated data
 data/datasets
-
+data/generated
+data/noise
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -4,8 +4,10 @@ from typing import Tuple
 import cv2
 import numpy as np
 import numpy.typing as npt
-from AbstractDecorator import AbstractDecorator
-from AbstractImage import AbstractImage
+
+from src.data_generation.noise_controllers.decorator import AbstractDecorator
+from src.data_generation.image.image_interface import AbstractImage
+
 
 
 def change_region(img, pts, channels=3, add=True, strenght=10):
@@ -84,6 +86,9 @@ def pizza_noise(
     * modified image (numpy.ndarray)
     """
     h, w = img.shape
+    # seed = 12 [12,13,14..22]
+    # seed = 13 [13, 23]
+    
 
     rand_l = 2 * (h + w - 2)
 
@@ -140,20 +145,25 @@ class Pizza(AbstractDecorator):
 
     def __init__(
         self,
-        component: AbstractImage,
+        component: AbstractImage = None,
         nr_of_pizzas: Tuple[int, int] = (5, 5),
         center_point: Tuple[int, int] = (320, 240),
         channels: int = 3,
         strength: tuple[int, int] = (10, 15),
     ) -> None:
-        super().__init__(component)
+        super().__init__(component=component)
         self.nr_of_pizzas = nr_of_pizzas
         self.center_point = center_point
         self.channels = channels
         self.strength = strength
+        
+        
+    def _set_additional_parameters(self, num_images: int) -> None:
+        self.num_images = num_images
+        
+        
 
-    def generate(self) -> npt.NDArray[np.uint8]:
-        img = self.component.generate()
+    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
         return pizza_noise(
             img,
             self.nr_of_pizzas,

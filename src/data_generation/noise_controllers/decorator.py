@@ -1,4 +1,6 @@
-from AbstractImage import AbstractImage
+from src.data_generation.image.image_interface import AbstractImage
+import numpy as np
+import numpy.typing as npt
 
 
 class AbstractDecorator(AbstractImage):
@@ -22,6 +24,10 @@ class AbstractDecorator(AbstractImage):
         """
 
         return self.component
+    
+    
+    def _set_additional_parameters(self, num_images: int) -> None:
+        pass
 
-    def generate(self) -> str:
+    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
         return self.component.generate()

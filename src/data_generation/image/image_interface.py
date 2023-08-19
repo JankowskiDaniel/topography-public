@@ -3,7 +3,7 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
-from src.data_generation._models import ImageDetails
+from src.models.image_models import ImageDetails
 
 
 def _check_image(
@@ -100,5 +100,5 @@ class AbstractImage(ABC):
         pass
 
     @abstractmethod
-    def generate(self) -> npt.NDArray[np.uint8]:
+    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
         raise NotImplementedError

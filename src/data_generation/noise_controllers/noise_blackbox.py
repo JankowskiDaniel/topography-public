@@ -2,9 +2,10 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
-from AbstractDecorator import AbstractDecorator
-from AbstractImage import AbstractImage
-
+# from AbstractDecorator import AbstractDecorator
+# from AbstractImage import AbstractImage
+from src.data_generation.noise_controllers.decorator import AbstractDecorator
+from src.data_generation.image.image_interface import AbstractImage
 
 def add_blackbox(
     img: np.ndarray,
@@ -47,14 +48,17 @@ class BlackBox(AbstractDecorator):
 
     def __init__(
         self,
-        component: AbstractImage,
+        component: AbstractImage = None,
         width: Tuple[int, int] = (5, 5),
-        height: Tuple[int, int] = (320, 240),
+        height: Tuple[int, int] = (30, 100),
     ) -> None:
         super().__init__(component)
         self.width = width
         self.height = height
+        
+    
+    def _set_additional_parameters(self, num_images: int) -> None:
+        self.num_images = num_images
 
-    def generate(self) -> npt.NDArray[np.uint8]:
-        img = self.component.generate()
+    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
         return add_blackbox(img, self.width, self.height)

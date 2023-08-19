@@ -2,7 +2,8 @@ import random
 
 import numpy as np
 import numpy.typing as npt
-from AbstractDecorator import AbstractDecorator
+# from AbstractDecorator import AbstractDecorator
+from src.data_generation.noise_controllers.decorator import AbstractDecorator
 
 
 def add_bubbles(
@@ -64,30 +65,33 @@ class Bubble(AbstractDecorator):
 
     def __init__(
         self,
-        component,
-        SPRAY_PARTICLES=None,
-        SPRAY_DIAMETER=None,
+        component = None,
+        spray_particles=None,
+        spray_diameter=None,
         fringes_color=None,
         range_of_blobs=(30, 40),
         sigma=None,
     ) -> None:
         super().__init__(component)
-        self.SPRAY_PARTICLES = SPRAY_PARTICLES
-        self.SPRAY_DIAMETER = SPRAY_DIAMETER
+        self.spray_particles = spray_particles
+        self.spray_diameter = spray_diameter
         self.fringes_color = fringes_color
         self.range_of_blobs = range_of_blobs
+        
+    
+    def _set_additional_parameters(self, num_images: int) -> None:
+        self.num_images = num_images
 
-    def generate(self) -> npt.NDArray[np.uint8]:
+    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
         """
         Decorators may call parent implementation of the generate, instead of
         calling the wrapped object directly. This approach simplifies extension
         of decorator classes.
         """
-        img = self.component.generate()
         img = add_bubbles(
             img,
-            self.SPRAY_PARTICLES,
-            self.SPRAY_DIAMETER,
+            self.spray_particles,
+            self.spray_diameter,
             self.fringes_color,
             self.range_of_blobs,
         )
