@@ -5,9 +5,8 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
 from src.data_generation.image.image_interface import AbstractImage
-
+from src.data_generation.noise_controllers.decorator import AbstractDecorator
 
 
 def change_region(img, pts, channels=3, add=True, strenght=10):
@@ -20,7 +19,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
     mask = cv2.merge([mask] * channels)
     inversed_mask = cv2.bitwise_not(mask)
 
-    image_rect = img_copy[y: y + h, x: x + w]
+    image_rect = img_copy[y : y + h, x : x + w]
 
     change = strenght
 
@@ -34,7 +33,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
 
     full_rect = cv2.add(image_rect_masked, image_rect_unmasked)
 
-    img_copy[y: y + h, x: x + w] = full_rect
+    img_copy[y : y + h, x : x + w] = full_rect
     return img_copy
 
 
@@ -88,7 +87,6 @@ def pizza_noise(
     h, w = img.shape
     # seed = 12 [12,13,14..22]
     # seed = 13 [13, 23]
-    
 
     rand_l = 2 * (h + w - 2)
 
@@ -146,9 +144,9 @@ class Pizza(AbstractDecorator):
     def __init__(
         self,
         component: AbstractImage = None,
-        nr_of_pizzas: Tuple[int, int] = (5, 5),
+        nr_of_pizzas: Tuple[int, int] = (3, 8),
         center_point: Tuple[int, int] = (320, 240),
-        channels: int = 3,
+        channels: int = 1,
         strength: tuple[int, int] = (10, 15),
     ) -> None:
         super().__init__(component=component)
@@ -156,12 +154,9 @@ class Pizza(AbstractDecorator):
         self.center_point = center_point
         self.channels = channels
         self.strength = strength
-        
-        
+
     def _set_additional_parameters(self, num_images: int) -> None:
         self.num_images = num_images
-        
-        
 
     def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
         return pizza_noise(

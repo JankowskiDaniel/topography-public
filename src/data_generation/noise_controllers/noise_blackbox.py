@@ -2,39 +2,41 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
+
+from src.data_generation.image.image_interface import AbstractImage
+
 # from AbstractDecorator import AbstractDecorator
 # from AbstractImage import AbstractImage
 from src.data_generation.noise_controllers.decorator import AbstractDecorator
-from src.data_generation.image.image_interface import AbstractImage
+
 
 def add_blackbox(
     img: np.ndarray,
-    width: Tuple[int, int] = (50, 150),
-    height: Tuple[int, int] = (30, 100),
+    blackbox_w: int = 50,
+    blackbox_h: int = 30,
+    blackbox_x: int = 0,
+    blackbox_y: int = 0,
 ):
     """
     ---
     Attributes:
     * img (numpy.ndarray): input image
+    * blackbox_w (int): width of blackbox
+    * blackbox_h (int): height of blackbox
+    * blackbox_x (int): horizontal position
+    * blackbox_y (int): vertical position
     ---
     Returns:
     * modified image (numpy.ndarray)
     """
-    # if np.random.rand() < 0.5:
-    #     return img
     h, w = img.shape
-    blackbox_w = np.random.randint(width[0], width[1] + 1)
-    blackbox_h = np.random.randint(height[0], height[1] + 1)
-
-    blackbox_x = np.random.randint(0, w)
-    blackbox_y = np.random.randint(0, h)
 
     blackbox_w = min(blackbox_w, w - blackbox_x)
     blackbox_h = min(blackbox_h, h - blackbox_y)
 
     img[
-        blackbox_y: blackbox_y + blackbox_h,
-        blackbox_x: blackbox_x + blackbox_w,
+        blackbox_y : blackbox_y + blackbox_h,
+        blackbox_x : blackbox_x + blackbox_w,
     ] = 0
 
     return img
@@ -51,14 +53,39 @@ class BlackBox(AbstractDecorator):
         component: AbstractImage = None,
         width: Tuple[int, int] = (5, 5),
         height: Tuple[int, int] = (30, 100),
+        x: Tuple[int, int] = (0, 640),
+        y: Tuple[int, int] = (0, 480),
     ) -> None:
         super().__init__(component)
         self.width = width
         self.height = height
-        
-    
+        self.x = x
+        self.y = y
+
     def _set_additional_parameters(self, num_images: int) -> None:
+        print(num_images)
         self.num_images = num_images
+        self.choosen_widths = np.random.randint(
+            self.width[0], self.width[1], num_images
+        )
+
+        self.choosen_heights = np.random.randint(
+            self.height[0], self.height[1], num_images
+        )
+
+        self.choosen_xs = np.random.randint(self.x[0], self.x[1], num_images)
+
+        self.choosen_ys = np.random.randint(self.y[0], self.y[1], num_images)
+
+        self.noise_index = 0
 
     def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
-        return add_blackbox(img, self.width, self.height)
+        noised_image = add_blackbox(
+            img,
+            blackbox_w=self.choosen_widths[self.noise_index],
+            blackbox_h=self.choosen_heights[self.noise_index],
+            blackbox_x=self.choosen_xs[self.noise_index],
+            blackbox_y=self.choosen_ys[self.noise_index],
+        )
+        self.noise_index += 1
+        return noised_image

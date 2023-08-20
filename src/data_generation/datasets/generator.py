@@ -2,10 +2,7 @@ import random
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-from src.models.image_models import ImageDetails
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
-
-from src.data_generation.noise_controllers.builder import build_noise_controller
+from tqdm import tqdm
 
 from src.data_generation.datasets.generate_utils import (
     _check_args,
@@ -14,7 +11,11 @@ from src.data_generation.datasets.generate_utils import (
     save2zip,
 )
 from src.data_generation.image.image_generator import Image
-from tqdm import tqdm
+from src.data_generation.noise_controllers.builder import (
+    build_noise_controller,
+)
+from src.data_generation.noise_controllers.decorator import AbstractDecorator
+from src.models.image_models import ImageDetails
 
 
 def generate_dataset(
@@ -31,8 +32,8 @@ def generate_dataset(
     save_parameters: bool = True,
     parameters_filename: str = "parameters.csv",
     seed: Optional[int] = None,
-    *args, 
-    **kwargs
+    *args,
+    **kwargs,
 ) -> None:
     _check_args(path, n_copies, epsilon_step, zipfile, filename)
 
@@ -55,7 +56,7 @@ def generate_dataset(
     epsilons = np.arange(
         start=min_epsilon, stop=max_epsilon, step=epsilon_step
     )
-    
+
     num_images = len(epsilons) * n_copies
 
     # create arrays with ring_center position and choosen noises.
@@ -68,11 +69,9 @@ def generate_dataset(
     height_centers = np.random.randint(
         min_height_center, max_height_center + 1, num_images
     )
-    
-    
+
     noise_controller: AbstractDecorator = build_noise_controller(
-        noiser=noise_type,
-        **kwargs
+        noiser=noise_type, **kwargs
     )
     noise_controller._set_additional_parameters(num_images=num_images)
 

@@ -2,6 +2,7 @@ import random
 
 import numpy as np
 import numpy.typing as npt
+
 # from AbstractDecorator import AbstractDecorator
 from src.data_generation.noise_controllers.decorator import AbstractDecorator
 
@@ -65,7 +66,7 @@ class Bubble(AbstractDecorator):
 
     def __init__(
         self,
-        component = None,
+        component=None,
         spray_particles=None,
         spray_diameter=None,
         fringes_color=None,
@@ -77,8 +78,7 @@ class Bubble(AbstractDecorator):
         self.spray_diameter = spray_diameter
         self.fringes_color = fringes_color
         self.range_of_blobs = range_of_blobs
-        
-    
+
     def _set_additional_parameters(self, num_images: int) -> None:
         self.num_images = num_images
 

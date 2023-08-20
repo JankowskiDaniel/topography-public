@@ -1,6 +1,7 @@
-from src.data_generation.image.image_interface import AbstractImage
 import numpy as np
 import numpy.typing as npt
+
+from src.data_generation.image.image_interface import AbstractImage
 
 
 class AbstractDecorator(AbstractImage):
@@ -24,8 +25,7 @@ class AbstractDecorator(AbstractImage):
         """
 
         return self.component
-    
-    
+
     def _set_additional_parameters(self, num_images: int) -> None:
         pass
 

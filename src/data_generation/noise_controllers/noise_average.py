@@ -1,16 +1,24 @@
-from typing import Optional
 import os
+from typing import Optional
+
 import cv2
 import numpy as np
 import numpy.typing as npt
 import pkg_resources
 
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
 from src.data_generation.image.image_interface import AbstractImage
+from src.data_generation.noise_controllers.decorator import AbstractDecorator
 
 
 def count_available_noises(noise_path: str) -> int:
-    return len([name for name in os.listdir(noise_path) if os.path.isfile(os.path.join(noise_path, name))])
+    return len(
+        [
+            name
+            for name in os.listdir(noise_path)
+            if os.path.isfile(os.path.join(noise_path, name))
+        ]
+    )
+
 
 def add_noise(
     pure_img: npt.NDArray[np.uint8],
@@ -73,26 +81,26 @@ class AverageNoise(AbstractDecorator):
     wrapped object.
     """
 
-    def __init__(self,
-                 noise_path: str = "",
-                component: AbstractImage = None) -> None:
+    def __init__(
+        self, noise_path: str = "", component: AbstractImage = None
+    ) -> None:
         super().__init__(component)
         self.noise_path = noise_path
-        
-        
+
     def _set_additional_parameters(self, num_images: int) -> None:
         self.num_available_noises = count_available_noises(
             noise_path=self.noise_path
-            )
-        self.choosen_noises = np.random.randint(0, 
-                                                self.num_available_noises, 
-                                                num_images)
+        )
+        self.choosen_noises = np.random.randint(
+            0, self.num_available_noises, num_images
+        )
         self.noise_index = 0
 
-
     def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
-        noised_image = add_noise(img,
-                         noise_path=self.noise_path,
-                         noise_file_index=self.choosen_noises[self.noise_index])
+        noised_image = add_noise(
+            img,
+            noise_path=self.noise_path,
+            noise_file_index=self.choosen_noises[self.noise_index],
+        )
         self.noise_index += 1
         return noised_image
