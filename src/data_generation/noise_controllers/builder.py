@@ -1,14 +1,14 @@
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
-from src.data_generation.noise_controllers.noise_average import AverageNoise
-from src.data_generation.noise_controllers.noise_blackbox import BlackBox
-from src.data_generation.noise_controllers.noise_bubble import Bubble
-from src.data_generation.noise_controllers.noise_pizza import Pizza
+from src.data_generation.noise_controllers.decorator import NoiseController
+from src.data_generation.noise_controllers.noise_average import AverageController
+from src.data_generation.noise_controllers.noise_blackbox import BlackboxController
+from src.data_generation.noise_controllers.noise_bubble import BubbleController
+from src.data_generation.noise_controllers.noise_pizza import PizzaController
 
 CONTROLLERS = {
-    "average": AverageNoise,
-    "blackbox": BlackBox,
-    "bubble": Bubble,
-    "pizza": Pizza,
+    "average": AverageController,
+    "blackbox": BlackboxController,
+    "bubble": BubbleController,
+    "pizza": PizzaController,
 }
 
 
@@ -40,9 +40,9 @@ VALIDATORS = {
 }
 
 
-def build_noise_controller(noiser: str, **params) -> AbstractDecorator:
+def build_noise_controller(noiser: str, **params) -> NoiseController:
     VALIDATORS[noiser](params=params)
-    controller: AbstractDecorator = CONTROLLERS[noiser]()
+    controller: NoiseController = CONTROLLERS[noiser]()
     for p in params:
         setattr(controller, p, params[p])
     return controller

@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from tqdm import tqdm
@@ -10,16 +10,16 @@ from src.data_generation.datasets.generate_utils import (
     save2directory,
     save2zip,
 )
-from src.data_generation.image.image_generator import Image
+from src.data_generation.image.image_generator import PureImageGenerator
 from src.data_generation.noise_controllers.builder import (
     build_noise_controller,
 )
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
-from src.models.image_models import ImageDetails
+from src.data_generation.noise_controllers.decorator import NoiseController
+from src.models.image_models import ImageDetails, PureImageParams
 
 
 def generate_dataset(
-    noise_type: str,
+    noise_type: Union[list[str], str],
     path: str,
     n_copies: int,
     epsilon_range: tuple[float, float] = (0.0, 1.0),
@@ -36,54 +36,52 @@ def generate_dataset(
     **kwargs,
 ) -> None:
     _check_args(path, n_copies, epsilon_step, zipfile, filename)
+    
+    if isinstance(noise_type, str):
+        noise_type = [noise_type]
 
     if seed:
         random.seed(seed)
+        np.random.seed(seed)
 
+
+    
+    
     min_epsilon, max_epsilon = epsilon_range
-    width, height = size
-
-    max_width_center_shift = width * center_shift
-    min_width_center = int(width / 2 - max_width_center_shift)
-    max_width_center = int(width / 2 + max_width_center_shift)
-
-    max_height_center_shift = height * center_shift
-    min_height_center = int(height / 2 - max_height_center_shift)
-    max_height_center = int(height / 2 + max_height_center_shift)
-
-    img_index = 0
-    parameters: List[Dict] = []
     epsilons = np.arange(
         start=min_epsilon, stop=max_epsilon, step=epsilon_step
     )
 
     num_images = len(epsilons) * n_copies
 
-    # create arrays with ring_center position and choosen noises.
-    # Those arrays will be always the same if you set the seed.
-    if seed is not None:
-        np.random.seed(seed)
-    width_centers = np.random.randint(
-        min_width_center, max_width_center + 1, num_images
-    )
-    height_centers = np.random.randint(
-        min_height_center, max_height_center + 1, num_images
-    )
+    
 
-    noise_controller: AbstractDecorator = build_noise_controller(
-        noiser=noise_type, **kwargs
+    pure_generator = PureImageGenerator(
+        size=size,
+        num_images=num_images,
+        brightness=brightness,
+        center_shift=center_shift
     )
-    noise_controller._set_additional_parameters(num_images=num_images)
+    controllers: list[NoiseController] = [
+        build_noise_controller(noise, **kwargs) for noise in noise_type
+    ]
+    for controller in controllers:
+        controller._set_additional_parameters(
+            num_images=num_images
+        )
 
+    img_index = 0
+    parameters: List[Dict] = []
     for _epsilon in tqdm(epsilons):
         _epsilon = float("{:.3f}".format(_epsilon))
         for _ in range(n_copies):
-            ring_center = (width_centers[img_index], height_centers[img_index])
-
-            # There is no noise added here.
-            builder = Image(size, _epsilon, ring_center, brightness)
-            img = builder.generate()
-            img = noise_controller.generate(img)
+            
+            img = pure_generator.generate(_epsilon,
+                                           img_index=img_index)
+            
+            for controller in controllers:
+                img = controller.generate(img)
+                
             img_filename = f"{str(img_index).zfill(5)}.png"
 
             if zipfile:
@@ -92,13 +90,14 @@ def generate_dataset(
                 save2directory(img, img_filename, path)
 
             if save_parameters:
+                pure_parameters: PureImageParams = pure_generator.current_image_stats
                 img_details = ImageDetails(
                     filename=img_filename,
-                    width=width,
-                    height=height,
+                    width=pure_parameters.width,
+                    height=pure_parameters.height,
                     epsilon=_epsilon,
-                    ring_center_width=ring_center[0],
-                    ring_center_height=ring_center[1],
+                    ring_center_width=pure_parameters.ring_center_width,
+                    ring_center_height=pure_parameters.ring_center_height,
                     min_brightness=brightness[0],
                     max_brightness=brightness[1],
                     used_noise=-1,
@@ -107,6 +106,6 @@ def generate_dataset(
                     # będzie wiadomo że avg noise nie był nałożony
                 )
                 parameters.append(img_details.dict())
-            img_index += 1
+            # img_index += 1
 
     parameters2csv(parameters, path, parameters_filename)

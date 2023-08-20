@@ -3,11 +3,11 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from src.data_generation.image.image_interface import AbstractImage
+from src.data_generation.image.image_interface import AbstractGenerator
 
 # from AbstractDecorator import AbstractDecorator
 # from AbstractImage import AbstractImage
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
+from src.data_generation.noise_controllers.decorator import NoiseController
 
 
 def add_blackbox(
@@ -42,7 +42,7 @@ def add_blackbox(
     return img
 
 
-class BlackBox(AbstractDecorator):
+class BlackboxController(NoiseController):
     """
     Decorators can execute their behavior either before or after the call to a
     wrapped object.
@@ -50,20 +50,17 @@ class BlackBox(AbstractDecorator):
 
     def __init__(
         self,
-        component: AbstractImage = None,
         width: Tuple[int, int] = (5, 5),
         height: Tuple[int, int] = (30, 100),
         x: Tuple[int, int] = (0, 640),
         y: Tuple[int, int] = (0, 480),
     ) -> None:
-        super().__init__(component)
         self.width = width
         self.height = height
         self.x = x
         self.y = y
 
     def _set_additional_parameters(self, num_images: int) -> None:
-        print(num_images)
         self.num_images = num_images
         self.choosen_widths = np.random.randint(
             self.width[0], self.width[1], num_images

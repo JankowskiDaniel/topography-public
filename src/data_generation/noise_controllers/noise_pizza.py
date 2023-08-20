@@ -5,8 +5,8 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from src.data_generation.image.image_interface import AbstractImage
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
+from src.data_generation.image.image_interface import AbstractGenerator
+from src.data_generation.noise_controllers.decorator import NoiseController
 
 
 def change_region(img, pts, channels=3, add=True, strenght=10):
@@ -135,7 +135,7 @@ def pizza_noise(
     return img
 
 
-class Pizza(AbstractDecorator):
+class PizzaController(NoiseController):
     """
     Decorators can execute their behavior either before or after the call to a
     wrapped object.
@@ -143,13 +143,11 @@ class Pizza(AbstractDecorator):
 
     def __init__(
         self,
-        component: AbstractImage = None,
         nr_of_pizzas: Tuple[int, int] = (3, 8),
         center_point: Tuple[int, int] = (320, 240),
         channels: int = 1,
         strength: tuple[int, int] = (10, 15),
     ) -> None:
-        super().__init__(component=component)
         self.nr_of_pizzas = nr_of_pizzas
         self.center_point = center_point
         self.channels = channels

@@ -3,6 +3,35 @@ from typing import Optional
 from pydantic import BaseModel, validator
 
 
+class PureImageParams(BaseModel):
+    width: int = 640
+    height: int = 480
+    epsilon: float = 0.0
+    ring_center_width: int = 320
+    ring_center_height: int = 240
+    min_brightness: int = 80
+    max_brightness: int = 210
+
+
+class AverageNoiseParams(BaseModel):
+    noise_used: int
+    
+
+class PizzaNoiseParams(BaseModel):
+    pizza_count: int
+    center_width: int
+    center_height: int
+    strength: int
+
+
+class BlackboxNoiseParams(BaseModel):
+    box_width: int
+    box_height: int
+    box_x: int
+    box_y: int
+
+
+
 class ImageDetails(BaseModel):
     width: int
     height: int

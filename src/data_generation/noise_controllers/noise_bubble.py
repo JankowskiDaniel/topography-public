@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 
 # from AbstractDecorator import AbstractDecorator
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
+from src.data_generation.noise_controllers.decorator import NoiseController
 
 
 def add_bubbles(
@@ -58,7 +58,7 @@ def add_bubbles(
     return img
 
 
-class Bubble(AbstractDecorator):
+class BubbleController(NoiseController):
     """
     Concrete Decorators call the wrapped object and alter its result in some
     way.
@@ -66,14 +66,12 @@ class Bubble(AbstractDecorator):
 
     def __init__(
         self,
-        component=None,
         spray_particles=None,
         spray_diameter=None,
         fringes_color=None,
         range_of_blobs=(30, 40),
         sigma=None,
     ) -> None:
-        super().__init__(component)
         self.spray_particles = spray_particles
         self.spray_diameter = spray_diameter
         self.fringes_color = fringes_color

@@ -6,8 +6,8 @@ import numpy as np
 import numpy.typing as npt
 import pkg_resources
 
-from src.data_generation.image.image_interface import AbstractImage
-from src.data_generation.noise_controllers.decorator import AbstractDecorator
+from src.data_generation.image.image_interface import AbstractGenerator
+from src.data_generation.noise_controllers.decorator import NoiseController
 
 
 def count_available_noises(noise_path: str) -> int:
@@ -75,16 +75,15 @@ def add_noise(
     return noised_image.astype(np.uint8)
 
 
-class AverageNoise(AbstractDecorator):
+class AverageController(NoiseController):
     """
     Decorators can execute their behavior either before or after the call to a
     wrapped object.
     """
 
     def __init__(
-        self, noise_path: str = "", component: AbstractImage = None
+        self, noise_path: str = ""
     ) -> None:
-        super().__init__(component)
         self.noise_path = noise_path
 
     def _set_additional_parameters(self, num_images: int) -> None:
