@@ -33,9 +33,10 @@ def zip2folder(src: str, dest: str):
         raise FileNotFoundError(f"Provided file: {src} does not exist.")
     if not os.path.isdir(dest):
         raise FileNotFoundError(f"Provided directory: {dest} does not exist.")
-
+    
+    filename = os.path.basename(src)
     with ZipFile(src, 'r') as zip_ref:
-        for file in tqdm(zip_ref.infolist(), desc='Extracting '):
+        for file in tqdm(zip_ref.infolist(), desc=f'Extracting {filename}: '):
             fname = os.path.basename(file.filename)
             if fname:
                 file.filename = fname
@@ -47,4 +48,7 @@ def zip2folder(src: str, dest: str):
 def downloadGDriveFile(id: str, dest_file_path: str):
     prefix = 'https://drive.google.com/uc?/export=download&id='
     url = prefix + id
-    gdown.download(url = url, output=dest_file_path)
+    return gdown.download(url = url, output=dest_file_path)
+
+def downloadGDriveFolder(url: str, dest_folder_path: str):
+    return gdown.download_folder(url = url, output=dest_folder_path)
