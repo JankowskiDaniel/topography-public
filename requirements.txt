@@ -6,7 +6,10 @@ pip-chill==1.0.3
 pydantic==1.10.6
 pylint==2.17.0
 pytest==7.2.2
-topography-surface==0.0.1
+torch==2.0.0
 torchvision==0.15.1
 types-setuptools==67.6.0.5
 types-tqdm==4.65.0.0
+captum==0.6.0
+matplotlib==3.6.2
+pandas==2.1.1
