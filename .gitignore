@@ -1,3 +1,9 @@
+# Images
+data/raw/ceramic/*.png
+data/raw/steel/*.png
+data/noise/ceramic/*.png
+data/noise/steel/*.png
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

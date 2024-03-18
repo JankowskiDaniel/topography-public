@@ -3,6 +3,7 @@ from zipfile import ZipFile
 import cv2
 import numpy.typing as npt
 from PIL import Image
+import os
 
 
 def save2zip(
@@ -21,7 +22,7 @@ def save2zip(
     """
     zip_path = filename
     if path:
-        zip_path = path + filename
+        zip_path = os.path.join(path, filename)
 
     _, encoded_image = cv2.imencode(".png", img)
     with ZipFile(zip_path, "a") as zip:
@@ -39,4 +40,4 @@ def save2directory(img: npt.ArrayLike, img_filename: str, path: str) -> None:
     :type path: str
     """
     image: Image = Image.fromarray(img)
-    image.save(path + img_filename)
+    image.save(os.path.join(path, img_filename))
