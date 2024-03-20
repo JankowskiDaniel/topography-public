@@ -41,7 +41,7 @@ class ImageDetails(BaseModel):
     min_brightness: int
     max_brightness: int
     used_noise: int
-    filename: Optional[str]
+    filename: Optional[str] = None
 
     @validator("width")
     def _check_width(cls, width) -> None:

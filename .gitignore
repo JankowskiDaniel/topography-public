@@ -1,7 +1,7 @@
 # Gerenated data
-data/datasets
-data/generated
-data/noise
+data/noise/*/*.png
+data/raw/*/*.png
+data/generated/*/*/*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

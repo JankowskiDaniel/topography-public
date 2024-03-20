@@ -106,6 +106,6 @@ def generate_dataset(
                     # będzie wiadomo że avg noise nie był nałożony
                 )
                 parameters.append(img_details.dict())
-            # img_index += 1
+            img_index += 1
 
     parameters2csv(parameters, path, parameters_filename)

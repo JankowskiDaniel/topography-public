@@ -38,7 +38,8 @@ def _count_available_raw_images(path_to_raw: str) -> int:
         [
             name
             for name in os.listdir(path_to_raw)
-            if os.path.isfile(os.path.join(path_to_raw, name))
+            if (os.path.isfile(os.path.join(path_to_raw, name))
+            and not name == ".gitkeep")
         ]
     )
 

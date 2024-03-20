@@ -15,7 +15,8 @@ def count_available_noises(noise_path: str) -> int:
         [
             name
             for name in os.listdir(noise_path)
-            if os.path.isfile(os.path.join(noise_path, name))
+            if (os.path.isfile(os.path.join(noise_path, name))
+            and not name == ".gitkeep")
         ]
     )
 
@@ -51,7 +52,7 @@ def add_noise(
     """
 
     if noise_path:
-        noise_image_filename = f"{noise_path}{noise_file_index}.png"
+        noise_image_filename = f"{noise_path}/{noise_file_index}.png"
     else:
         noise_image_filename = pkg_resources.resource_filename(
             __name__, f"/samples/noise/{noise_file_index}.png"

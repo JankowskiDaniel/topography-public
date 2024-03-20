@@ -24,7 +24,7 @@ def save2zip(
     """
     zip_path = filename
     if path:
-        zip_path = path + filename
+        zip_path = os.path.join(path, filename)
 
     _, encoded_image = cv2.imencode(".png", img)
     with ZipFile(zip_path, "a") as zip:
@@ -42,7 +42,7 @@ def save2directory(img: npt.ArrayLike, img_filename: str, path: str) -> None:
     :type path: str
     """
     image = Image.fromarray(img)
-    image.save(path + img_filename)
+    image.save(os.path.join(path, img_filename))
 
 
 def _check_args(
@@ -78,4 +78,4 @@ def parameters2csv(
     :type parameters_filename: str
     """
     df = pd.DataFrame.from_dict(parameters)
-    df.to_csv(path + parameters_filename, encoding="utf-8", index=False)
+    df.to_csv(os.path.join(path, parameters_filename), encoding="utf-8", index=False)
