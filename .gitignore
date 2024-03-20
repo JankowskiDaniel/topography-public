@@ -2,6 +2,7 @@
 data/noise/*/*.png
 data/raw/*/*.png
 data/generated/*/*/*.png
+data/generated/*/*/*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
