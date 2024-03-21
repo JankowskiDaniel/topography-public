@@ -22,6 +22,7 @@ def generate_dataset(
     noise_type: Union[list[str], str],
     path: str,
     n_copies: int,
+    name_prefix: str,
     epsilon_range: tuple[float, float] = (0.0, 1.0),
     epsilon_step: float = 0.001,
     size: Tuple[int, int] = (640, 480),
@@ -82,7 +83,7 @@ def generate_dataset(
             for controller in controllers:
                 img = controller.generate(img)
                 
-            img_filename = f"{str(img_index).zfill(5)}.png"
+            img_filename = f"{name_prefix}_{str(img_index).zfill(5)}.png"
 
             if zipfile:
                 save2zip(img, img_filename, filename, path)
