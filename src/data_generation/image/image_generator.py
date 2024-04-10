@@ -2,8 +2,8 @@ from typing import Optional, Tuple
 import numpy as np
 import numpy.typing as npt
 
-from src.models.image_models import ImageDetails, PureImageParams
-from src.data_generation.image.image_interface import AbstractGenerator
+from models.image_models import ImageDetails, PureImageParams
+from data_generation.image.image_interface import AbstractGenerator
 
 def _check_image(
     size: Tuple[int, int],

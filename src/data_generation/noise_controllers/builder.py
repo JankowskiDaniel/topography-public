@@ -1,8 +1,8 @@
-from src.data_generation.noise_controllers.decorator import NoiseController
-from src.data_generation.noise_controllers.noise_average import AverageController
-from src.data_generation.noise_controllers.noise_blackbox import BlackboxController
-from src.data_generation.noise_controllers.noise_bubble import BubbleController
-from src.data_generation.noise_controllers.noise_pizza import PizzaController
+from data_generation.noise_controllers.decorator import NoiseController
+from data_generation.noise_controllers.noise_average import AverageController
+from data_generation.noise_controllers.noise_blackbox import BlackboxController
+from data_generation.noise_controllers.noise_bubble import BubbleController
+from data_generation.noise_controllers.noise_pizza import PizzaController
 
 CONTROLLERS = {
     "average": AverageController,

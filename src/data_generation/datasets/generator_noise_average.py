@@ -167,4 +167,13 @@ def generate_noise_dataset(
 
 
 if __name__ == "__main__":
-    pass
+    generate_noise_dataset(
+        path="data/noise",
+        size=(640, 480),
+        num_images=50,
+        num_used_raw_images=100,
+        path_to_raw="data/raw/steel/1channel/",
+        zipfile=True,
+        zip_filename="test.zip",
+        seed=42,
+    )

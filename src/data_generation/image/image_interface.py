@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from src.models.image_models import PureImageParams
+from models.image_models import PureImageParams
 
 
 class AbstractGenerator(ABC):

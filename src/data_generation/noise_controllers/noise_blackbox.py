@@ -3,11 +3,11 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from src.data_generation.image.image_interface import AbstractGenerator
+from data_generation.image.image_interface import AbstractGenerator
 
 # from AbstractDecorator import AbstractDecorator
 # from AbstractImage import AbstractImage
-from src.data_generation.noise_controllers.decorator import NoiseController
+from data_generation.noise_controllers.decorator import NoiseController
 
 
 def add_blackbox(
@@ -50,8 +50,8 @@ class BlackboxController(NoiseController):
 
     def __init__(
         self,
-        width: Tuple[int, int] = (5, 5),
-        height: Tuple[int, int] = (30, 100),
+        width: Tuple[int, int] = (30, 320),
+        height: Tuple[int, int] = (30, 240),
         x: Tuple[int, int] = (0, 640),
         y: Tuple[int, int] = (0, 480),
     ) -> None:

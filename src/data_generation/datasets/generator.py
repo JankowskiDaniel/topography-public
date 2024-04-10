@@ -4,18 +4,18 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 from tqdm import tqdm
 
-from src.data_generation.datasets.generate_utils import (
+from data_generation.datasets.generate_utils import (
     _check_args,
     parameters2csv,
     save2directory,
     save2zip,
 )
-from src.data_generation.image.image_generator import PureImageGenerator
-from src.data_generation.noise_controllers.builder import (
+from data_generation.image.image_generator import PureImageGenerator
+from data_generation.noise_controllers.builder import (
     build_noise_controller,
 )
-from src.data_generation.noise_controllers.decorator import NoiseController
-from src.models.image_models import ImageDetails, PureImageParams
+from data_generation.noise_controllers.decorator import NoiseController
+from models.image_models import ImageDetails, PureImageParams
 
 
 def generate_dataset(
@@ -76,6 +76,18 @@ def generate_dataset(
     for _epsilon in tqdm(epsilons):
         _epsilon = float("{:.3f}".format(_epsilon))
         for _ in range(n_copies):
+
+            # draw a random brightness in the range
+            # first value from 80-100
+            # second value from 190-210
+            brightness = random.randint(80, 100), random.randint(190, 210)
+
+            pure_generator = PureImageGenerator(
+                size=size,
+                num_images=num_images,
+                brightness=brightness,
+                center_shift=center_shift
+            )
             
             img = pure_generator.generate(_epsilon,
                                            img_index=img_index)
@@ -110,3 +122,23 @@ def generate_dataset(
             img_index += 1
 
     parameters2csv(parameters, path, parameters_filename)
+
+
+if __name__ == "__main__":
+    generate_dataset(
+        noise_type="average",
+        path="data/average",
+        n_copies=50,
+        name_prefix="average",
+        epsilon_range=(0.0, 1.0),
+        epsilon_step=0.001,
+        size=(640, 480),
+        brightness=(80, 210),
+        center_shift=0.01,
+        zipfile=True,
+        filename="average.zip",
+        save_parameters=True,
+        parameters_filename="parameters.csv",
+        seed=42,
+        kwargs={"noise_path": "data/noise/steel/"},
+    )

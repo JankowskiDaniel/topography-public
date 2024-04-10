@@ -6,8 +6,8 @@ import numpy as np
 import numpy.typing as npt
 import pkg_resources
 
-from src.data_generation.image.image_interface import AbstractGenerator
-from src.data_generation.noise_controllers.decorator import NoiseController
+from data_generation.image.image_interface import AbstractGenerator
+from data_generation.noise_controllers.decorator import NoiseController
 
 
 def count_available_noises(noise_path: str) -> int:

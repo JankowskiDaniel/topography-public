@@ -1,6 +1,6 @@
 import pytest
 
-from src.data_generation.AbstractImage import generate_pure_image
+from data_generation.AbstractImage import generate_pure_image
 
 def test_image_attributes():
     with pytest.raises(ValueError):
