@@ -4,18 +4,18 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 from tqdm import tqdm
 
-from data_generation.datasets.generate_utils import (
+from src.data_generation.datasets.generate_utils import (
     _check_args,
     parameters2csv,
     save2directory,
     save2zip,
 )
-from data_generation.image.image_generator import PureImageGenerator
-from data_generation.noise_controllers.builder import (
+from src.data_generation.image.image_generator import PureImageGenerator
+from src.data_generation.noise_controllers.builder import (
     build_noise_controller,
 )
-from data_generation.noise_controllers.decorator import NoiseController
-from models.image_models import ImageDetails, PureImageParams
+from src.data_generation.noise_controllers.decorator import NoiseController
+from src.models.image_models import ImageDetails, PureImageParams
 
 
 def generate_dataset(
@@ -140,5 +140,5 @@ if __name__ == "__main__":
         save_parameters=True,
         parameters_filename="parameters.csv",
         seed=42,
-        kwargs={"noise_path": "data/noise/steel/"},
+        kwargs={"path_average_noise": "data/average_noise/steel/"},
     )

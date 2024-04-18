@@ -5,8 +5,8 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from data_generation.image.image_interface import AbstractGenerator
-from data_generation.noise_controllers.decorator import NoiseController
+from src.data_generation.image.image_interface import AbstractGenerator
+from src.data_generation.noise_controllers.decorator import NoiseController
 
 
 def change_region(img, pts, channels=3, add=True, strenght=10):

@@ -10,12 +10,12 @@ from src.data_generation.image.image_interface import AbstractGenerator
 from src.data_generation.noise_controllers.decorator import NoiseController
 
 
-def count_available_noises(path_average_noise: str) -> int:
+def count_available_noises(path_fourier_noise: str) -> int:
     return len(
         [
             name
-            for name in os.listdir(path_average_noise)
-            if (os.path.isfile(os.path.join(path_average_noise, name))
+            for name in os.listdir(path_fourier_noise)
+            if (os.path.isfile(os.path.join(path_fourier_noise, name))
             and not name == ".gitkeep")
         ]
     )
@@ -23,14 +23,14 @@ def count_available_noises(path_average_noise: str) -> int:
 
 def add_noise(
     pure_img: npt.NDArray[np.uint8],
-    path_average_noise: Optional[str] = None,
+    path_fourier_noise: Optional[str] = None,
     noise_file_index: int = 0,
 ) -> npt.NDArray[np.uint8]:
     """Generate the image. In case of generating single image
-    (using this function) you don't have to pass path_average_noise
+    (using this function) you don't have to pass path_fourier_noise
     argument only if you use this code as a package.
     If you didn't install it via pip, you have to pass
-    the argument path_average_noise. It is assumed that noise images
+    the argument path_fourier_noise. It is assumed that noise images
     in you directory are named with integers started from
     0 to N, e.g. you have 5 noise image in you directory,
     so files are named: 0.png, 1.png, ..., 4.png.
@@ -42,8 +42,8 @@ def add_noise(
     for generating whole dataset in case of single images.
 
     :param pure_img: generated image without any noise
-    :param path_average_noise: path to noise dataset, defaults to None
-    :type path_average_noise: str, optional
+    :param path_fourier_noise: path to noise dataset, defaults to None
+    :type path_fourier_noise: str, optional
     :param noise_file_index: Index (filename) of noise image used
     to generate image, optional
     :type noise_file_index: int, optional
@@ -51,8 +51,8 @@ def add_noise(
     :rtype: np.array
     """
 
-    if path_average_noise:
-        noise_image_filename = f"{path_average_noise}/{noise_file_index}.png"
+    if path_fourier_noise:
+        noise_image_filename = f"{path_fourier_noise}/{noise_file_index}.png"
     else:
         noise_image_filename = pkg_resources.resource_filename(
             __name__, f"/samples/average_noise/{noise_file_index}.png"
@@ -76,20 +76,20 @@ def add_noise(
     return noised_image.astype(np.uint8)
 
 
-class AverageController(NoiseController):
+class FourierController(NoiseController):
     """
     Decorators can execute their behavior either before or after the call to a
     wrapped object.
     """
 
     def __init__(
-        self, path_average_noise: str = ""
+        self, path_fourier_noise: str = ""
     ) -> None:
-        self.path_average_noise = path_average_noise
+        self.path_fourier_noise = path_fourier_noise
 
     def _set_additional_parameters(self, num_images: int) -> None:
         self.num_available_noises = count_available_noises(
-            path_average_noise=self.path_average_noise
+            path_fourier_noise=self.path_fourier_noise
         )
         self.choosen_noises = np.random.randint(
             0, self.num_available_noises, num_images
@@ -99,7 +99,7 @@ class AverageController(NoiseController):
     def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
         noised_image = add_noise(
             img,
-            path_average_noise=self.path_average_noise,
+            path_fourier_noise=self.path_fourier_noise,
             noise_file_index=self.choosen_noises[self.noise_index],
         )
         self.noise_index += 1

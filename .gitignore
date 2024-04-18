@@ -1,5 +1,6 @@
 # Gerenated data
-data/noise/*/*.png
+data/average_noise/*/*.png
+data/fourier_noise/*/*.png
 data/raw/*/*.png
 data/generated/*/*/*.png
 data/generated/*/*/*.csv

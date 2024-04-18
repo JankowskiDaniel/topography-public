@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 
 # from AbstractDecorator import AbstractDecorator
-from data_generation.noise_controllers.decorator import NoiseController
+from src.data_generation.noise_controllers.decorator import NoiseController
 
 
 def add_bubbles(
