@@ -5,7 +5,6 @@ data/raw/*/*.png
 data/generated/*/*/*.png
 data/generated/*/*/*.csv
 data/generated/*/*/*.zip
-data/generated/
 data/raw
 /venv_torch
 setup.py
