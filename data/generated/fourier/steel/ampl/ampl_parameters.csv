@@ -1,0 +1,11 @@
+width,height,epsilon,ring_center_width,ring_center_height,min_brightness,max_brightness,used_noise,filename
+640,480,0.0,319,241,89,192,-1,fourier_steel_ampl_00000.png
+640,480,0.1,315,242,80,208,-1,fourier_steel_ampl_00001.png
+640,480,0.2,317,236,89,203,-1,fourier_steel_ampl_00002.png
+640,480,0.3,314,235,92,206,-1,fourier_steel_ampl_00003.png
+640,480,0.4,318,237,91,194,-1,fourier_steel_ampl_00004.png
+640,480,0.5,314,242,86,198,-1,fourier_steel_ampl_00005.png
+640,480,0.6,322,238,94,190,-1,fourier_steel_ampl_00006.png
+640,480,0.7,314,235,87,209,-1,fourier_steel_ampl_00007.png
+640,480,0.8,317,237,94,190,-1,fourier_steel_ampl_00008.png
+640,480,0.9,314,235,83,192,-1,fourier_steel_ampl_00009.png

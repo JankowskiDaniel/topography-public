@@ -1,9 +1,11 @@
 import os
 import random
+import glob
 from typing import List, Tuple
 
 import cv2
 import numpy as np
+import pandas as pd
 import pkg_resources
 from tqdm import tqdm
 from src.data_generation.datasets.generate_utils import (
@@ -19,10 +21,9 @@ def _check_args(num_images: int):
         raise ValueError("Number of generated images must be grater than 0.")
 
 
-def _generate_noise_image(
+def _generate_noise_image_amplitude_domain(
     size: Tuple[int, int] = (640, 480),
-    path_to_raw: str = None,
-    used_raw_image: np.array = None,
+    used_raw_image: str ='',
     pass_value: int = 10,
 ) -> np.array:
     """Generate single noise image. The function is given indices (filenames) of raw images used for extraction. In case of generating single noise image (by this function)
@@ -42,19 +43,7 @@ def _generate_noise_image(
     :rtype: np.array
     """
 
-    if path_to_raw:
-        raw_filename = (
-            f"{path_to_raw}/{str(used_raw_image).zfill(5)}.png"
-        )
-        # raw_filename = (
-        #     f"{path_to_raw}/00000.png"
-        # )
-    else:
-        raw_filename = pkg_resources.resource_filename(
-            __name__,
-            f"/samples/raw/{str(used_raw_image).zfill(5)}.png",
-        )
-    img = cv2.imread(raw_filename)
+    img = cv2.imread(used_raw_image)
     img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)[:, :, 0]
 
     ## TODO: teraz tutaj trzeba zrobić fouriera
@@ -68,7 +57,45 @@ def _generate_noise_image(
     rgb_fft = rgb_fft * mask
     img = abs(np.fft.ifft2(rgb_fft)).clip(0,255)
 
-    return img.astype(np.uint8)
+    raw_img = used_raw_image.split("/")[-1].split(".")[0]
+    return raw_img, img.astype(np.uint8)
+
+def _generate_noise_image_frequency_domain(
+    size: Tuple[int, int] = (640, 480),
+    used_raw_image: str ='',
+    pass_value: int = 10,
+) -> np.array:
+    """Generate single noise image. The function is given indices (filenames) of raw images used for extraction. In case of generating single noise image (by this function)
+    there is no need to parse argument with raw images filenames, the list of raw images will be automatically produced
+
+    :param size: Size of generated noise image. Defaults to (640, 480).
+    :type size: Tuple[int, int], optional
+    :param path_to_raw: Path to raw images, defaults to None
+    :type path_to_raw: str, optional
+    :param used_raw_image: Index of raw image used for extracting noise, defaults to None
+    :type used_raw_image: np.array, optional
+    :param seed: Set to some integer value to generate the same noise every function run, defaults to None
+    :type seed: int, optional
+    :param pass_value:
+    :type pass_value: int, optional
+    :return: Noise image
+    :rtype: np.array
+    """
+
+    img = cv2.imread(used_raw_image)
+    img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)[:, :, 0]
+
+    ## TODO: teraz tutaj trzeba zrobić fouriera
+    rgb_fft = np.fft.fftshift(np.fft.fft2(img))
+
+    row, col = img.shape
+    center_row, center_col = row // 2, col // 2
+    rgb_fft = rgb_fft[center_row - pass_value:center_row + pass_value, 
+         center_col - pass_value:center_col + pass_value]
+    # img = abs(np.fft.ifft2(rgb_fft)).clip(0,255)
+
+    raw_img = used_raw_image.split("/")[-1].split(".")[0]
+    return raw_img, rgb_fft
 
 
 def generate_fourier_noise_dataset(
@@ -76,10 +103,11 @@ def generate_fourier_noise_dataset(
     size: Tuple[int, int] = (640, 480),
     num_images: int = 50,
     pass_value: int = 10,
-    path_to_raw: str = None,
+    raw_epsilons_path: str = None,
     zipfile: bool = False,
     zip_filename: str = None,
     seed: int = None,
+    domain: str = "amplitude"
 ) -> None:
     """Create noise dataset. The way how seed work is as follows:
         1. We count how many raw images are available. If path_to_raw was not passed (available only when you installed package via pip)
@@ -109,35 +137,45 @@ def generate_fourier_noise_dataset(
     """
     _check_args(num_images)
 
-    available_raw_images = _count_available_raw_images(path_to_raw)
-
     if seed is not None:
         np.random.seed(seed)
-    selected_raw_images = np.random.randint(
-        0, available_raw_images, size=num_images
-    )  # all raw images selected for noise extraction
 
-    raw_images = np.split(
-        selected_raw_images, num_images
-    )  # raw images per one noise image
-    raw_images = np.squeeze(raw_images)
+    eps_est = pd.read_csv(os.path.join(raw_epsilons_path, "raw_epsilons.csv"))
+    selected_raw_images = []
+    for eps in np.arange(0,1,1/num_images):
+        eps = round(eps, 3)
+        paths = eps_est[eps_est.epsilon == eps].path
+        chosen_path = np.random.choice(paths, 1)
+        selected_raw_images.append(chosen_path[0])
+    selected_raw_images = np.array(selected_raw_images)
 
-    for img in tqdm(range(num_images)):
-        noise_image = _generate_noise_image(
-            size=size, 
-            path_to_raw=path_to_raw, 
-            used_raw_image=raw_images[img], 
-            pass_value=pass_value
-        )
-        if zipfile:
-            save2zip(
-                noise_image,
-                img_filename=f"{img}.png",
-                filename=zip_filename,
-                path=path,
+    if domain == "amplitude":
+        for img in tqdm(range(num_images)):
+            raw_filename, noise_image = _generate_noise_image_amplitude_domain(
+                size=size, 
+                used_raw_image=selected_raw_images[img], 
+                pass_value=pass_value
             )
-        else:
-            save2directory(noise_image, img_filename=f"{img}.png", path=path)
+            if zipfile:
+                save2zip(
+                    noise_image,
+                    img_filename=f"noise_{img}_{raw_filename}.png",
+                    filename=zip_filename,
+                    path=path,
+                )
+            else:
+                save2directory(noise_image, img_filename=f"noise_{img}_{raw_filename}.png", path=path)
+    
+    else:
+        for img in tqdm(range(num_images)):
+            raw_filename, noise = _generate_noise_image_frequency_domain(
+                size=size, 
+                used_raw_image=selected_raw_images[img], 
+                pass_value=pass_value
+            )
+            freq = pd.DataFrame(noise)
+            freq.to_csv(os.path.join(path, f"noise_{img}_{raw_filename}.csv"), header=None, index=None)
+            
 
 
 if __name__ == "__main__":
@@ -147,5 +185,6 @@ if __name__ == "__main__":
         num_images=2,
         path_to_raw="data/raw/steel",
         seed=42,
-        pass_value=4
+        pass_value=4,
+        domain="frequency"
     )
