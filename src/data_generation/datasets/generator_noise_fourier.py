@@ -110,6 +110,7 @@ def generate_fourier_noise_dataset(
     _check_args(num_images)
 
     available_raw_images = _count_available_raw_images(path_to_raw)
+    print("Available raw images: ", available_raw_images)
 
     if seed is not None:
         np.random.seed(seed)
@@ -137,7 +138,7 @@ def generate_fourier_noise_dataset(
                 path=path,
             )
         else:
-            save2directory(noise_image, img_filename=f"{img}.png", path=path)
+            save2directory(noise_image, img_filename=f"{img}_{str(raw_images[img]).zfill(5)}.png", path=path)
 
 
 if __name__ == "__main__":

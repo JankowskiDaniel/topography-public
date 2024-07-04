@@ -9,6 +9,9 @@ data/raw
 /venv_torch
 setup.py
 .vscode
+data/generated/*/*.png
+data/generated/blackbox/
+data/noise/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
