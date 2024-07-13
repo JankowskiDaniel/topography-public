@@ -30,6 +30,7 @@ def get_available_noises(path_fourier_noise: str) -> int:
 def add_noise_amplitude(
     pure_img: npt.NDArray[np.uint8],
     noise_file_path: str = "",
+    noise_proportion: float = 0.5,
 ) -> npt.NDArray[np.uint8]:
     """Generate the image. In case of generating single image
     (using this function) you don't have to pass path_fourier_noise
@@ -67,9 +68,9 @@ def add_noise_amplitude(
 
     noise_image = noise_image[:, :, 0]
     noise_mean = np.mean(noise_image)
-    difference = -(noise_image - noise_mean)
+    difference = noise_image - noise_mean
 
-    noised_image = pure_img - difference
+    noised_image = pure_img + noise_proportion * difference
     noised_image = np.clip(noised_image, 0, 255)
     return noised_image.astype(np.uint8)
 
@@ -77,6 +78,7 @@ def add_noise_frequency(
     pure_img: npt.NDArray[np.uint8],
     pass_value: int = 4,
     noise_file_path: str = "",
+    noise_proportion: float = 0.5,
 ) -> npt.NDArray[np.uint8]:
     """Generate the image. In case of generating single image
     (using this function) you don't have to pass path_fourier_noise
@@ -109,10 +111,18 @@ def add_noise_frequency(
     row, col = pure_img.shape
     center_row, center_col = row // 2, col // 2
 
-    fft_real_image[center_row - pass_value:center_row + pass_value, 
-                    center_col - pass_value:center_col + pass_value] = \
-        (fft_real_image[center_row - pass_value:center_row + pass_value, 
-                    center_col - pass_value:center_col + pass_value] + noise) / 2
+    fft_real_image[
+        center_row - pass_value:center_row + pass_value, 
+        center_col - pass_value:center_col + pass_value
+        ] = \
+        (
+            fft_real_image[
+                center_row - pass_value:center_row + pass_value, 
+                center_col - pass_value:center_col + pass_value
+            ] * (1-noise_proportion) 
+            + 
+            noise * noise_proportion
+        )
     
     img = abs(np.fft.ifft2(fft_real_image)).clip(0,255)
 
@@ -131,11 +141,13 @@ class FourierController(NoiseController):
         path_fourier_noise_freq: str = "",
         path_fourier_noise_ampl: str = "",
         pass_value: int = 4,
+        noise_proportion: float = 0.5,
     ) -> None:
         self.domain = domain
         self.path_fourier_noise_freq = path_fourier_noise_freq
         self.path_fourier_noise_ampl = path_fourier_noise_ampl
         self.pass_value = pass_value
+        self.noise_proportion = noise_proportion
 
     def _set_additional_parameters(self, num_images: int) -> None:
         if self.domain == "ampl":
@@ -157,12 +169,14 @@ class FourierController(NoiseController):
             noised_image = add_noise_amplitude(
                 img,
                 noise_file_path=self.choosen_noises[self.noise_index],
+                noise_proportion=self.noise_proportion,
             )
         else:
             noised_image = add_noise_frequency(
                 img,
                 pass_value=self.pass_value,
                 noise_file_path=self.choosen_noises[self.noise_index],
+                noise_proportion=self.noise_proportion,
             )
         self.noise_index += 1
         return noised_image
