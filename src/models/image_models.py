@@ -15,7 +15,7 @@ class PureImageParams(BaseModel):
 
 class AverageNoiseParams(BaseModel):
     noise_used: int
-    
+
 
 class PizzaNoiseParams(BaseModel):
     pizza_count: int
@@ -29,7 +29,6 @@ class BlackboxNoiseParams(BaseModel):
     box_height: int
     box_x: int
     box_y: int
-
 
 
 class ImageDetails(BaseModel):

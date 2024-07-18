@@ -1,11 +1,7 @@
 import random
-from typing import Tuple
-
 import cv2
 import numpy as np
 import numpy.typing as npt
-
-from src.data_generation.image.image_interface import AbstractGenerator
 from src.data_generation.noise_controllers.decorator import NoiseController
 
 
@@ -19,7 +15,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
     mask = cv2.merge([mask] * channels)
     inversed_mask = cv2.bitwise_not(mask)
 
-    image_rect = img_copy[y : y + h, x : x + w]
+    image_rect = img_copy[y: y + h, x: x + w]
 
     change = strenght
 
@@ -33,7 +29,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
 
     full_rect = cv2.add(image_rect_masked, image_rect_unmasked)
 
-    img_copy[y : y + h, x : x + w] = full_rect
+    img_copy[y: y + h, x: x + w] = full_rect
     return img_copy
 
 
@@ -143,8 +139,8 @@ class PizzaController(NoiseController):
 
     def __init__(
         self,
-        nr_of_pizzas: Tuple[int, int] = (3, 8),
-        center_point: Tuple[int, int] = (320, 240),
+        nr_of_pizzas: tuple[int, int] = (3, 8),
+        center_point: tuple[int, int] = (320, 240),
         channels: int = 1,
         strength: tuple[int, int] = (10, 15),
     ) -> None:

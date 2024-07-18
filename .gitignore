@@ -16,6 +16,8 @@ setup.py
 data/generated/*/*.png
 data/generated/blackbox/
 data/noise/
+data/generated/
+data/fourier_noise/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

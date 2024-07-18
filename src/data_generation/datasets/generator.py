@@ -37,7 +37,7 @@ def generate_dataset(
     **kwargs,
 ) -> None:
     _check_args(path, n_copies, epsilon_step, zipfile, filename)
-    
+
     if isinstance(noise_type, str):
         noise_type = [noise_type]
 
@@ -45,9 +45,6 @@ def generate_dataset(
         random.seed(seed)
         np.random.seed(seed)
 
-
-    
-    
     min_epsilon, max_epsilon = epsilon_range
     epsilons = np.arange(
         start=min_epsilon, stop=max_epsilon, step=epsilon_step
@@ -55,21 +52,17 @@ def generate_dataset(
 
     num_images = len(epsilons) * n_copies
 
-    
-
     pure_generator = PureImageGenerator(
         size=size,
         num_images=num_images,
         brightness=brightness,
-        center_shift=center_shift
+        center_shift=center_shift,
     )
     controllers: list[NoiseController] = [
         build_noise_controller(noise, **kwargs) for noise in noise_type
     ]
     for controller in controllers:
-        controller._set_additional_parameters(
-            num_images=num_images
-        )
+        controller._set_additional_parameters(num_images=num_images)
 
     img_index = 0
     parameters: List[Dict] = []
@@ -86,15 +79,14 @@ def generate_dataset(
                 size=size,
                 num_images=num_images,
                 brightness=brightness,
-                center_shift=center_shift
+                center_shift=center_shift,
             )
-            
-            img = pure_generator.generate(_epsilon,
-                                           img_index=img_index)
-            
+
+            img = pure_generator.generate(_epsilon, img_index=img_index)
+
             for controller in controllers:
                 img = controller.generate(img)
-                
+
             img_filename = f"{name_prefix}_{str(img_index).zfill(5)}.png"
 
             if zipfile:
@@ -103,7 +95,9 @@ def generate_dataset(
                 save2directory(img, img_filename, path)
 
             if save_parameters:
-                pure_parameters: PureImageParams = pure_generator.current_image_stats
+                pure_parameters: PureImageParams = (
+                    pure_generator.current_image_stats
+                )
                 img_details = ImageDetails(
                     filename=img_filename,
                     width=pure_parameters.width,

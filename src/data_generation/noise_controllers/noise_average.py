@@ -1,12 +1,8 @@
 import os
-from typing import Optional
-
 import cv2
 import numpy as np
 import numpy.typing as npt
 import pkg_resources
-
-from src.data_generation.image.image_interface import AbstractGenerator
 from src.data_generation.noise_controllers.decorator import NoiseController
 
 
@@ -15,15 +11,17 @@ def count_available_noises(path_average_noise: str) -> int:
         [
             name
             for name in os.listdir(path_average_noise)
-            if (os.path.isfile(os.path.join(path_average_noise, name))
-            and not name == ".gitkeep")
+            if (
+                os.path.isfile(os.path.join(path_average_noise, name))
+                and not name == ".gitkeep"
+            )
         ]
     )
 
 
 def add_noise(
     pure_img: npt.NDArray[np.uint8],
-    path_average_noise: Optional[str] = None,
+    path_average_noise: str | None = None,
     noise_file_index: int = 0,
 ) -> npt.NDArray[np.uint8]:
     """Generate the image. In case of generating single image
@@ -60,16 +58,16 @@ def add_noise(
 
     # TODO For this moment I do not have access to generated noise images,
     # so I created one half black half white
-    noise_image = cv2.imread(noise_image_filename)
+    noise_image = cv2.imread(noise_image_filename)  # type: ignore
 
     if noise_image.shape[:2] != pure_img.shape:
-        noise_image = cv2.resize(
+        noise_image = cv2.resize(  # type: ignore
             noise_image, pure_img.shape, interpolation=cv2.INTER_AREA
         )
 
     noise_image = noise_image[:, :, 0]
-    noise_mean = np.mean(noise_image)
-    difference = -(noise_image - noise_mean)
+    noise_mean = np.mean(noise_image)  # type: ignore
+    difference = -(noise_image - noise_mean)  # type: ignore
 
     noised_image = pure_img - difference
     noised_image = np.clip(noised_image, 0, 255)
@@ -82,9 +80,7 @@ class AverageController(NoiseController):
     wrapped object.
     """
 
-    def __init__(
-        self, path_average_noise: str = ""
-    ) -> None:
+    def __init__(self, path_average_noise: str = "") -> None:
         self.path_average_noise = path_average_noise
 
     def _set_additional_parameters(self, num_images: int) -> None:

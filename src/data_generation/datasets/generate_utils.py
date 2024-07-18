@@ -6,10 +6,11 @@ import cv2
 import numpy.typing as npt
 import pandas as pd
 from PIL import Image
+import numpy as np
 
 
 def save2zip(
-    img: npt.ArrayLike, img_filename: str, filename: str, path: str
+    img: npt.NDArray[np.uint8], img_filename: str, filename: str, path: str
 ) -> None:
     """Save image to the .zip file
 
@@ -78,16 +79,23 @@ def parameters2csv(
     :type parameters_filename: str
     """
     df = pd.DataFrame.from_dict(parameters)
-    df.to_csv(os.path.join(path, parameters_filename), encoding="utf-8", index=False)
+    df.to_csv(
+        os.path.join(path, parameters_filename), encoding="utf-8", index=False
+    )
 
-def _count_available_raw_images(path_to_raw: str) -> int:
-    """Count how many raw images are available in given directory. If path_to_raw was not passed into the function, 
-    package by default has 300 raw images installed itself, therefore function return 300 in case where that parameter is None.   
-    
 
-    :param path_to_raw: Path to folder which contains ONLY raw images. In that directory should not be any other files.
+def _count_available_raw_images(path_to_raw: str | None) -> int:
+    """Count how many raw images are available in given directory.
+    If path_to_raw was not passed into the function,
+    package by default has 300 raw images installed itself, therefore function
+    return 300 in case where that parameter is None.
+
+
+    :param path_to_raw: Path to folder which contains ONLY raw images. In that
+    directory should not be any other files.
     :type path_to_raw: str
-    :return: Number of different raw images which might be used for generating noise dataset.
+    :return: Number of different raw images which might be used for generating
+    noise dataset.
     :rtype: int
     """
     if path_to_raw is None:
@@ -96,7 +104,9 @@ def _count_available_raw_images(path_to_raw: str) -> int:
         [
             name
             for name in os.listdir(path_to_raw)
-            if (os.path.isfile(os.path.join(path_to_raw, name))
-            and not name == ".gitkeep")
+            if (
+                os.path.isfile(os.path.join(path_to_raw, name))
+                and not name == ".gitkeep"
+            )
         ]
     )

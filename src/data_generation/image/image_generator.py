@@ -1,15 +1,15 @@
-from typing import Optional, Tuple
 import numpy as np
 import numpy.typing as npt
 
 from src.models.image_models import ImageDetails, PureImageParams
 from src.data_generation.image.image_interface import AbstractGenerator
 
+
 def _check_image(
-    size: Tuple[int, int],
+    size: tuple[int, int],
     epsilon: float,
-    ring_center: Tuple[int, int],
-    brightness: Tuple[int, int],
+    ring_center: tuple[int, int],
+    brightness: tuple[int, int],
     noise_file_index,
 ) -> None:
     width, height = size
@@ -25,24 +25,24 @@ def _check_image(
         max_brightness=max_brightness,
         used_noise=noise_file_index,
     )
-    
-    
+
+
 def generate_pure_image(
-    size: Tuple[int, int], 
-    epsilon: float, 
-    ring_center: Tuple[int, int], 
-    brightness: Tuple[int, int]
-    ) -> npt.NDArray[np.uint8]:
+    size: tuple[int, int],
+    epsilon: float,
+    ring_center: tuple[int, int],
+    brightness: tuple[int, int],
+) -> npt.NDArray[np.uint8]:
     """Generate pure image
 
     :param size: Size of the image (width, height)
-    :type size: Tuple[int, int]
+    :type size: tuple[int, int]
     :param epsilon: Epsilon value
     :type epsilon: float
     :param ring_center: Position of the central ring
-    :type ring_center: Tuple[int, int]
+    :type ring_center: tuple[int, int]
     :param brightness: Range of brightness
-    :type brightness: Tuple[int, int]
+    :type brightness: tuple[int, int]
     :return: 2D array which represents pure image
     :rtype: np.array
     """
@@ -86,15 +86,17 @@ class PureImageGenerator(AbstractGenerator):
     Concrete Components provide default implementations of the generates. There
     might be several variations of these classes.
     """
-    def __init__(self, 
-                 size: tuple[int, int],
-                 num_images: int,
-                 brightness: Tuple[int, int] = (80, 210),
-                 center_shift: float = 0.01,
-                 ) -> None:
+
+    def __init__(
+        self,
+        size: tuple[int, int],
+        num_images: int,
+        brightness: tuple[int, int] = (80, 210),
+        center_shift: float = 0.01,
+    ) -> None:
         self.size = size
         self.brightness = brightness
-        
+
         self.width, self.height = size
 
         max_width_center_shift = self.width * center_shift
@@ -104,37 +106,34 @@ class PureImageGenerator(AbstractGenerator):
         max_height_center_shift = self.height * center_shift
         min_height_center = int(self.height / 2 - max_height_center_shift)
         max_height_center = int(self.height / 2 + max_height_center_shift)
-        
+
         self.width_centers = np.random.randint(
-                min_width_center, max_width_center + 1, num_images
-            )
+            min_width_center, max_width_center + 1, num_images
+        )
         self.height_centers = np.random.randint(
-                min_height_center, max_height_center + 1, num_images
-            )
-        
+            min_height_center, max_height_center + 1, num_images
+        )
+
         self.current_image_stats: PureImageParams = PureImageParams()
-    
-    
-    def _update_image_stats(self, 
-                            epsilon: float,
-                            ring_center: tuple[int, int]
-                            ) -> None:
+
+    def _update_image_stats(
+        self, epsilon: float, ring_center: tuple[int, int]
+    ) -> None:
         self.current_image_stats.epsilon = epsilon
         self.current_image_stats.ring_center_width = ring_center[0]
         self.current_image_stats.ring_center_height = ring_center[1]
-    
 
-    def generate(self, 
-                 epsilon: float,
-                 img_index: int
-                 ) -> npt.NDArray[np.uint8]:
-        ring_center = (self.width_centers[img_index], 
-                       self.height_centers[img_index])
-        self._update_image_stats(epsilon=epsilon,
-                                 ring_center=ring_center)
+    def generate(
+        self, epsilon: float, img_index: int
+    ) -> npt.NDArray[np.uint8]:
+        ring_center = (
+            self.width_centers[img_index],
+            self.height_centers[img_index],
+        )
+        self._update_image_stats(epsilon=epsilon, ring_center=ring_center)
         return generate_pure_image(
             size=self.size,
             epsilon=epsilon,
             ring_center=ring_center,
-            brightness=self.brightness
+            brightness=self.brightness,
         )

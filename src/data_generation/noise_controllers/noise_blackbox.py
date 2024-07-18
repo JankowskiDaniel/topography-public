@@ -1,12 +1,5 @@
-from typing import Tuple
-
 import numpy as np
 import numpy.typing as npt
-
-from src.data_generation.image.image_interface import AbstractGenerator
-
-# from AbstractDecorator import AbstractDecorator
-# from AbstractImage import AbstractImage
 from src.data_generation.noise_controllers.decorator import NoiseController
 
 
@@ -35,8 +28,8 @@ def add_blackbox(
     blackbox_h = min(blackbox_h, h - blackbox_y)
 
     img[
-        blackbox_y : blackbox_y + blackbox_h,
-        blackbox_x : blackbox_x + blackbox_w,
+        blackbox_y: blackbox_y + blackbox_h,
+        blackbox_x: blackbox_x + blackbox_w,
     ] = 0
 
     return img
@@ -50,10 +43,10 @@ class BlackboxController(NoiseController):
 
     def __init__(
         self,
-        width: Tuple[int, int] = (30, 320),
-        height: Tuple[int, int] = (30, 240),
-        x: Tuple[int, int] = (0, 640),
-        y: Tuple[int, int] = (0, 480),
+        width: tuple[int, int] = (30, 320),
+        height: tuple[int, int] = (30, 240),
+        x: tuple[int, int] = (0, 640),
+        y: tuple[int, int] = (0, 480),
     ) -> None:
         self.width = width
         self.height = height

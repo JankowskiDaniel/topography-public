@@ -1,13 +1,10 @@
 import os
-from typing import Optional
 import glob
 import cv2
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
-import pkg_resources
 
-from src.data_generation.image.image_interface import AbstractGenerator
 from src.data_generation.noise_controllers.decorator import NoiseController
 
 
@@ -16,12 +13,15 @@ def count_available_noises(path_fourier_noise: str) -> int:
         [
             name
             for name in os.listdir(path_fourier_noise)
-            if (os.path.isfile(os.path.join(path_fourier_noise, name))
-            and not name == ".gitkeep")
+            if (
+                os.path.isfile(os.path.join(path_fourier_noise, name))
+                and not name == ".gitkeep"
+            )
         ]
     )
 
-def get_available_noises(path_fourier_noise: str) -> int:
+
+def get_available_noises(path_fourier_noise: str) -> list[str]:
 
     paths = sorted(glob.glob(os.path.join(path_fourier_noise, "noise*")))
     return paths
@@ -67,12 +67,13 @@ def add_noise_amplitude(
         )
 
     noise_image = noise_image[:, :, 0]
-    noise_mean = np.mean(noise_image)
-    difference = noise_image - noise_mean
+    noise_mean = np.mean(noise_image)  # type: ignore
+    difference = noise_image - noise_mean  # type: ignore
 
     noised_image = pure_img + noise_proportion * difference
     noised_image = np.clip(noised_image, 0, 255)
     return noised_image.astype(np.uint8)
+
 
 def add_noise_frequency(
     pure_img: npt.NDArray[np.uint8],
@@ -105,26 +106,27 @@ def add_noise_frequency(
     :rtype: np.array
     """
 
-    noise = pd.read_csv(noise_file_path, header=None).to_numpy().astype(complex)
-    
+    noise = (
+        pd.read_csv(noise_file_path, header=None).to_numpy().astype(complex)
+    )
+
     fft_real_image = np.fft.fftshift(np.fft.fft2(pure_img))
     row, col = pure_img.shape
     center_row, center_col = row // 2, col // 2
 
     fft_real_image[
-        center_row - pass_value:center_row + pass_value, 
-        center_col - pass_value:center_col + pass_value
-        ] = \
-        (
-            fft_real_image[
-                center_row - pass_value:center_row + pass_value, 
-                center_col - pass_value:center_col + pass_value
-            ] * (1-noise_proportion) 
-            + 
-            noise * noise_proportion
-        )
-    
-    img = abs(np.fft.ifft2(fft_real_image)).clip(0,255)
+        center_row - pass_value: center_row + pass_value,
+        center_col - pass_value: center_col + pass_value,
+    ] = (
+        fft_real_image[
+            center_row - pass_value: center_row + pass_value,
+            center_col - pass_value: center_col + pass_value,
+        ]
+        * (1 - noise_proportion)
+        + noise * noise_proportion
+    )
+
+    img = abs(np.fft.ifft2(fft_real_image)).clip(0, 255)
 
     return img
 
@@ -136,7 +138,7 @@ class FourierController(NoiseController):
     """
 
     def __init__(
-        self, 
+        self,
         domain: str = "",
         path_fourier_noise_freq: str = "",
         path_fourier_noise_ampl: str = "",
@@ -159,8 +161,7 @@ class FourierController(NoiseController):
             path_fourier_noise=path_noise
         )
         self.choosen_noises = np.random.choice(
-            self.available_noises, num_images,
-            replace=True
+            self.available_noises, num_images, replace=True
         )
         self.noise_index = 0
 
