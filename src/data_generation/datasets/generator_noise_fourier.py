@@ -175,7 +175,6 @@ def generate_fourier_noise_dataset(
             )
             freq = pd.DataFrame(noise)
             freq.to_csv(os.path.join(path, f"noise_{img}_{raw_filename}.csv"), header=None, index=None)
-            
 
 
 if __name__ == "__main__":
