@@ -1,11 +1,15 @@
 # Gerenated data
 data/average_noise/*/*.png
-data/fourier_noise/*/*.png
+data/fourier_noise/*/*/*.png
+data/fourier_noise/*/*/*.csv
 data/raw/*/*.png
 data/generated/*/*/*.png
 data/generated/*/*/*.csv
+data/generated/*/*/*/*.zip
+data/generated/*/*/*/*.csv
 data/generated/*/*/*.zip
 data/raw
+data/steel/*
 /venv_torch
 setup.py
 .vscode
