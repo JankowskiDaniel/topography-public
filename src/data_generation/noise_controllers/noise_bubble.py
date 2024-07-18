@@ -2,8 +2,6 @@ import random
 
 import numpy as np
 import numpy.typing as npt
-
-# from AbstractDecorator import AbstractDecorator
 from src.data_generation.noise_controllers.decorator import NoiseController
 
 
