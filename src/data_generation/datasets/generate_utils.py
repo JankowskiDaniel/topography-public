@@ -42,7 +42,7 @@ def save2directory(img: npt.ArrayLike, img_filename: str, path: str) -> None:
     :param path: Path to the output directory
     :type path: str
     """
-    image = Image.fromarray(img)
+    image = Image.fromarray(img)  # type: ignore
     image.save(os.path.join(path, img_filename))
 
 
