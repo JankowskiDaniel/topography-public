@@ -99,6 +99,8 @@ class PureImageGenerator(AbstractGenerator):
 
         self.width, self.height = size
 
+        # center shift - random value between 0.15 and 0.25
+        center_shift = np.random.uniform(0.15, 0.25)
         max_width_center_shift = self.width * center_shift
         min_width_center = int(self.width / 2 - max_width_center_shift)
         max_width_center = int(self.width / 2 + max_width_center_shift)

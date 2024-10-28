@@ -106,29 +106,23 @@ def add_noise_frequency(
     :rtype: np.array
     """
 
-    noise = (
-        pd.read_csv(noise_file_path, header=None).to_numpy().astype(complex)
-    )
 
-    fft_real_image = np.fft.fftshift(np.fft.fft2(pure_img))
-    row, col = pure_img.shape
-    center_row, center_col = row // 2, col // 2
+    # TODO For this moment I do not have access to generated noise images,
+    # so I created one half black half white
+    noise_image = cv2.imread(noise_file_path)
 
-    fft_real_image[
-        center_row - pass_value: center_row + pass_value,
-        center_col - pass_value: center_col + pass_value,
-    ] = (
-        fft_real_image[
-            center_row - pass_value: center_row + pass_value,
-            center_col - pass_value: center_col + pass_value,
-        ]
-        * (1 - noise_proportion)
-        + noise * noise_proportion
-    )
+    if noise_image.shape[:2] != pure_img.shape:
+        noise_image = cv2.resize(
+            noise_image, pure_img.shape, interpolation=cv2.INTER_AREA
+        )
 
-    img = abs(np.fft.ifft2(fft_real_image)).clip(0, 255)
+    noise_image = noise_image[:, :, 0]
+    noise_mean = np.mean(noise_image)  # type: ignore
+    difference = noise_image - noise_mean  # type: ignore
 
-    return img
+    noised_image = pure_img + noise_proportion * difference
+    noised_image = np.clip(noised_image, 0, 255)
+    return noised_image.astype(np.uint8)
 
 
 class FourierController(NoiseController):
@@ -156,6 +150,11 @@ class FourierController(NoiseController):
             path_noise = self.path_fourier_noise_ampl
         else:
             path_noise = self.path_fourier_noise_freq
+        
+        self.noise_df = pd.read_csv(path_noise + "/epsilons.csv")
+        # round epsilon to 3 decimal places
+        self.noise_df["epsilon"] = self.noise_df["epsilon"].round(3)
+        self.threshold = 0.01
 
         self.available_noises = get_available_noises(
             path_fourier_noise=path_noise
@@ -165,19 +164,25 @@ class FourierController(NoiseController):
         )
         self.noise_index = 0
 
-    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+    def generate(self, img: npt.NDArray[np.uint8], epsilon: float) -> npt.NDArray[np.uint8]:
+        self.noise_df["diff"] = abs(self.noise_df.epsilon - epsilon)
+        temp = self.noise_df[self.noise_df["diff"] < self.threshold]
+
+        # take a list of filenames
+        available_raw_images = temp.filename.to_list()
+
+        chosen_filename = np.random.choice(available_raw_images)
         if self.domain == "ampl":
             noised_image = add_noise_amplitude(
                 img,
-                noise_file_path=self.choosen_noises[self.noise_index],
+                noise_file_path=chosen_filename,
                 noise_proportion=self.noise_proportion,
             )
         else:
             noised_image = add_noise_frequency(
                 img,
                 pass_value=self.pass_value,
-                noise_file_path=self.choosen_noises[self.noise_index],
+                noise_file_path=chosen_filename,
                 noise_proportion=self.noise_proportion,
             )
-        self.noise_index += 1
         return noised_image

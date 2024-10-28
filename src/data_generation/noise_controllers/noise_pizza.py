@@ -152,7 +152,7 @@ class PizzaController(NoiseController):
     def _set_additional_parameters(self, num_images: int) -> None:
         self.num_images = num_images
 
-    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+    def generate(self, img: npt.NDArray[np.uint8], epsilon: float) -> npt.NDArray[np.uint8]:
         return pizza_noise(
             img,
             self.nr_of_pizzas,

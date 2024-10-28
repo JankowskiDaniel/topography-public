@@ -13,5 +13,5 @@ class NoiseController(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+    def generate(self, img: npt.NDArray[np.uint8], epsilon: float) -> npt.NDArray[np.uint8]:
         raise NotImplementedError

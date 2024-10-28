@@ -43,6 +43,7 @@ def save2directory(img: npt.ArrayLike, img_filename: str, path: str) -> None:
     :type path: str
     """
     image = Image.fromarray(img)  # type: ignore
+    image = image.convert("L")
     image.save(os.path.join(path, img_filename))
 
 

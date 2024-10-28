@@ -85,7 +85,7 @@ def generate_dataset(
             img = pure_generator.generate(_epsilon, img_index=img_index)
 
             for controller in controllers:
-                img = controller.generate(img)
+                img = controller.generate(img, _epsilon)
 
             img_filename = f"{name_prefix}_{str(img_index).zfill(5)}.png"
 

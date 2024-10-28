@@ -92,7 +92,7 @@ class AverageController(NoiseController):
         )
         self.noise_index = 0
 
-    def generate(self, img: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+    def generate(self, img: npt.NDArray[np.uint8], epsilon: float) -> npt.NDArray[np.uint8]:
         noised_image = add_noise(
             img,
             path_average_noise=self.path_average_noise,

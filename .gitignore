@@ -18,6 +18,8 @@ data/generated/blackbox/
 data/noise/
 data/generated/
 data/fourier_noise/
+data/average_noise/
+data/balanced_fourier/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

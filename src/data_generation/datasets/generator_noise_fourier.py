@@ -1,4 +1,5 @@
 import os
+from typing import Literal
 import cv2
 import numpy as np
 import numpy.typing as npt
@@ -10,9 +11,11 @@ from src.data_generation.datasets.generate_utils import (
 )
 
 
-def _check_args(num_images: int):
+def _check_args(num_images: int, domain: str) -> None:
     if num_images <= 0:
         raise ValueError("Number of generated images must be grater than 0.")
+    if domain not in ["amplitude", "frequency"]:
+        raise ValueError("Domain must be either 'amplitude' or 'frequency'.")
 
 
 def _generate_noise_image_amplitude_domain(
@@ -87,22 +90,32 @@ def _generate_noise_image_frequency_domain(
     :rtype: np.array
     """
 
-    img = cv2.imread(used_raw_image)
-    img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)[:, :, 0]
-
-    # TODO: teraz tutaj trzeba zrobić fouriera
-    rgb_fft: npt.NDArray[np.uint8] = np.fft.fftshift(np.fft.fft2(img))
-
+    img = cv2.imread(used_raw_image, cv2.IMREAD_GRAYSCALE)
+    img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
+    
+    # Perform Fourier transform and shift zero frequency component to the center
+    img_fft = np.fft.fftshift(np.fft.fft2(img))
+    
+    # Create a mask to keep the low frequencies
     row, col = img.shape
+    mask = np.zeros((row, col), dtype=np.uint8)
     center_row, center_col = row // 2, col // 2
-    rgb_fft = rgb_fft[
-        center_row - pass_value: center_row + pass_value,
-        center_col - pass_value: center_col + pass_value,
-    ]
-    # img = abs(np.fft.ifft2(rgb_fft)).clip(0,255)
-
+    mask[center_row - pass_value:center_row + pass_value, center_col - pass_value:center_col + pass_value] = 1
+    
+    # Apply the mask to the frequency domain representation
+    img_fft_filtered = img_fft * mask
+    
+    # Perform the inverse Fourier transform to get the image back in the spatial domain
+    img_filtered = np.abs(np.fft.ifft2(np.fft.ifftshift(img_fft_filtered)))
+    
+    # Normalize the result to the range [0, 255] and convert to uint8
+    img_filtered_normalized = cv2.normalize(img_filtered, None, 0, 255, cv2.NORM_MINMAX)
+    img_filtered_normalized = np.uint8(img_filtered_normalized)
+    
+    # Extract the raw image name without extension
     raw_img = used_raw_image.split("/")[-1].split(".")[0]
-    return raw_img, rgb_fft
+    
+    return raw_img, img_filtered_normalized
 
 
 def generate_fourier_noise_dataset(
@@ -114,7 +127,7 @@ def generate_fourier_noise_dataset(
     zipfile: bool = False,
     zip_filename: str = "dataset.zip",
     seed: int | None = None,
-    domain: str = "amplitude",
+    domain: Literal["amplitude", "frequency"] = "amplitude",
 ) -> None:
     """Generate dataset of noise images in Fourier domain.
 
@@ -137,63 +150,70 @@ def generate_fourier_noise_dataset(
     :param seed: Set seed to obtain the same result, defaults to None
     :type seed: int, optional
     """
-    _check_args(num_images)
+    _check_args(num_images, domain)
 
     if seed is not None:
         np.random.seed(seed)
 
     eps_est = pd.read_csv(os.path.join(raw_epsilons_path, "raw_epsilons.csv"))
+
+    # round epsilons to 3 decimal places
+    eps_est["epsilon"] = eps_est["epsilon"].apply(lambda x: round(x, 3))
+    threshold = 0.01
+
     selected_raw_images = []
     for eps in np.arange(0, 1, 1 / num_images):
         eps = round(eps, 3)
-        paths = eps_est[eps_est.epsilon == eps].path
-        chosen_path = np.random.choice(paths, 1)
-        selected_raw_images.append(chosen_path[0])
-    # selected_raw_images = np.array(selected_raw_images)  # type: ignore
 
-    if domain == "amplitude":
-        for img in tqdm(range(num_images)):
-            raw_filename, noise_image = _generate_noise_image_amplitude_domain(  # noqa: E501
-                size=size,
-                used_raw_image=selected_raw_images[img],
-                pass_value=pass_value,
-            )
-            if zipfile:
-                save2zip(
-                    noise_image,
-                    img_filename=f"noise_{img}_{raw_filename}.png",
-                    filename=zip_filename,
-                    path=path,
-                )
-            else:
-                save2directory(
-                    noise_image,
-                    img_filename=f"noise_{img}_{raw_filename}.png",
-                    path=path,
-                )
+        # filter raw images where |epsilon - eps| < 0.01
+        eps_est["diff"] = abs(eps_est.epsilon - eps)
+        temp = eps_est[eps_est["diff"] < threshold]
 
-    else:
-        for img in tqdm(range(num_images)):
-            raw_filename, noise = _generate_noise_image_frequency_domain(
-                size=size,
-                used_raw_image=selected_raw_images[img],
-                pass_value=pass_value,
+        # take a list of filenames
+        available_raw_images = temp.filename.to_list()
+
+        chosen_filename = np.random.choice(available_raw_images)
+        chosen_path = os.path.join(raw_epsilons_path, chosen_filename)
+        selected_raw_images.append(chosen_path)
+
+    gen_funct = {
+        "amplitude": _generate_noise_image_amplitude_domain,
+        "frequency": _generate_noise_image_frequency_domain,
+    }
+
+
+    for img in tqdm(range(num_images)):
+        raw_path, noise_image = gen_funct[domain](  # noqa: E501
+            size=size,
+            used_raw_image=selected_raw_images[img],
+            pass_value=pass_value,
+        )
+        raw_filename = os.path.basename(raw_path)
+        if zipfile:
+            save2zip(
+                noise_image,
+                img_filename=f"noise_{img}_{raw_filename}.png",
+                filename=zip_filename,
+                path=path,
             )
-            freq = pd.DataFrame(noise)
-            freq.to_csv(
-                os.path.join(path, f"noise_{img}_{raw_filename}.csv"),
-                header=None,
-                index=None,
+        else:
+            save2directory(
+                noise_image,
+                img_filename=f"noise_{img}_{raw_filename}.png",
+                path=path,
             )
 
 
 if __name__ == "__main__":
+    path_repo = os.path.dirname(os.getcwd())
+    path = os.path.join(path_repo, "data", "fourier_noise", "freq")
+    path_raw = os.path.join(path_repo, "data", "raw", "steel", "1channel")
+    num_noise_images = 2000
     generate_fourier_noise_dataset(
-        path="data/fourier_noise/steel",
-        size=(640, 480),
-        num_images=2,
-        raw_epsilons_path="data/raw/steel",
-        seed=42,
+        path=path,
+        raw_epsilons_path=path_raw,
+        num_images=num_noise_images,
+        seed=23,
         pass_value=4,
-        domain="frequency",
+        domain="frequency"
     )
