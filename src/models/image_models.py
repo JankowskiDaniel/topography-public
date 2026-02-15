@@ -54,47 +54,6 @@ class ImageDetails(BaseModel):
             raise ValueError(f"Height must be positive integer, not {height}")
         return height
 
-    # @validator("ring_center_width")
-    # def _check_width_center(cls, width_center, values, **kwargs) -> None:
-    #     perc_center_diff = 0.05
-    #     width = values["width"]
-    #     max_pixel_shift = width * perc_center_diff
-    #     min_width_center = int(width / 2 - max_pixel_shift)
-    #     max_width_center = int(width / 2 + max_pixel_shift)
-    #     if width_center <= 0:
-    #         raise ValueError(
-    #             f"Width center must be positive integer, not {width_center}"
-    #         )
-    #     if width_center > width:
-    #         raise ValueError("Can not be greater than width")
-    #     if width_center < min_width_center or width_center > max_width_center:
-    #         raise ValueError(
-    #             f"Width of the image center must be in range <{min_width_center};{max_width_center}> (up to 5% shift from the default center)"  # noqa: 501
-    #         )
-    #     return width_center
-
-    # @validator("ring_center_height")
-    # def _check_height_center(cls, height_center, values, **kwargs) -> None:
-    #     perc_center_diff = 0.05
-    #     height = values["height"]
-    #     max_pixel_shift = height * perc_center_diff
-    #     min_height_center = int(height / 2 - max_pixel_shift)
-    #     max_height_center = int(height / 2 + max_pixel_shift)
-    #     if height_center <= 0:
-    #         raise ValueError(
-    #             f"Height center must be positive integer, not {height_center}"
-    #         )
-    #     if height_center > height:
-    #         raise ValueError("Can not be greater than height")
-    #     if (
-    #         height_center < min_height_center
-    #         or height_center > max_height_center
-    #     ):
-    #         raise ValueError(
-    #             f"Height of the image center must be in range <{min_height_center};{max_height_center}> (up to 5% shift from the default center)"  # noqa: 501
-    #         )
-    #     return height_center
-
     @validator("min_brightness")
     def _check_min_brightness(cls, min_brightness) -> None:
         if min_brightness < 40 or min_brightness > 120:

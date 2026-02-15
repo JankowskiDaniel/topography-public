@@ -6,7 +6,7 @@ import gdown
 import pandas as pd
 
 
-def prepareDataFrame(csv_paths: list[str], images_path: str):
+def prepare_data_frame(csv_paths: list[str], images_path: str):
     for csv_path in csv_paths:
         if not os.path.isfile(csv_path):
             raise FileNotFoundError(f"Provided file: {csv_path} does not exist.")
@@ -14,7 +14,7 @@ def prepareDataFrame(csv_paths: list[str], images_path: str):
         raise FileNotFoundError(f"Provided directory: {images_path} does not exist.")
 
     # mapping path to dataframe with full paths to images
-    def mapPath2DataFrame(csv_path):
+    def map_path_to_data_frame(csv_path):
         dataf = pd.read_csv(csv_path)
         fullpaths = images_path + "/" + dataf["filename"]
         for path in fullpaths:
@@ -26,11 +26,11 @@ def prepareDataFrame(csv_paths: list[str], images_path: str):
 
         return dataf
 
-    dataframes = list(map(lambda x: mapPath2DataFrame(x), csv_paths))
+    dataframes = list(map(lambda x: map_path_to_data_frame(x), csv_paths))
     return pd.concat(dataframes)
 
 
-def zip2folder(src: str, dest: str):
+def zip_to_folder(src: str, dest: str):
     if not os.path.isfile(src):
         raise FileNotFoundError(f"Provided file: {src} does not exist.")
     if not os.path.isdir(dest):
@@ -48,11 +48,11 @@ def zip2folder(src: str, dest: str):
                     pass
 
 
-def downloadGDriveFile(id: str, dest_file_path: str):
+def download_g_drive_file(id: str, dest_file_path: str):
     prefix = "https://drive.google.com/uc?/export=download&id="
     url = prefix + id
     return gdown.download(url=url, output=dest_file_path)
 
 
-def downloadGDriveFolder(url: str, dest_folder_path: str):
+def download_g_drive_folder(url: str, dest_folder_path: str):
     return gdown.download_folder(url=url, output=dest_folder_path)

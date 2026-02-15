@@ -10,6 +10,9 @@ from src.data_generation.noise_controllers.noise_pizza import PizzaController
 from src.data_generation.noise_controllers.noise_fourier import (
     FourierController,
 )
+from src.data_generation.noise_controllers.noise_perlin import (
+    PerlinController,
+)
 
 
 CONTROLLERS = {
@@ -18,6 +21,7 @@ CONTROLLERS = {
     "bubble": BubbleController,
     "pizza": PizzaController,
     "fourier": FourierController,
+    "perlin": PerlinController,
 }
 
 
@@ -45,12 +49,17 @@ def _validate_fourier_noise_params(**params) -> None:
     pass
 
 
+def _validate_perlin_noise_params(**params) -> None:
+    pass
+
+
 VALIDATORS = {
     "average": _validate_average_noise_params,
     "blackbox": _validate_blackbox_noise_params,
     "bubble": _validate_bubble_noise_params,
     "pizza": _validate_pizza_noise_params,
     "fourier": _validate_fourier_noise_params,
+    "perlin": _validate_perlin_noise_params,
 }
 
 
