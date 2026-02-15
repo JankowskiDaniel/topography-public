@@ -15,7 +15,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
     mask = cv2.merge([mask] * channels)
     inversed_mask = cv2.bitwise_not(mask)
 
-    image_rect = img_copy[y : y + h, x : x + w]
+    image_rect = img_copy[y: y + h, x: x + w]
 
     change = strenght
 
@@ -29,7 +29,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
 
     full_rect = cv2.add(image_rect_masked, image_rect_unmasked)
 
-    img_copy[y : y + h, x : x + w] = full_rect
+    img_copy[y: y + h, x: x + w] = full_rect
     return img_copy
 
 
@@ -54,9 +54,9 @@ def corner_point_if_feasible(pts):
         return [p1[0][0], p2[0][1]]
 
 
-def pizza_noise(
+def triangular_noise(
     img: np.ndarray,
-    nr_of_pizzas: tuple[int, int] = (5, 5),
+    nr_of_triangles: tuple[int, int] = (5, 5),
     center_point: tuple[int, int] = (320, 240),
     strength: tuple[int, int] = (10, 15),
     channels: int = 3,
@@ -69,10 +69,10 @@ def pizza_noise(
 
     Attributes:
     * img (numpy.ndarray): input image
-    * nr_of_pizzas (tuple[int,int]): a list containing the
+    * nr_of_triangles (tuple[int,int]): a list containing the
     minimum and maximum number of modified areas
     * center_point (tuple[int,int]): center location
-    * strenght (int): defines how intense the change will be
+    * strength (int): defines how intense the change will be
     * channels (int): number of image channels
 
     ---
@@ -86,11 +86,14 @@ def pizza_noise(
 
     rand_l = 2 * (h + w - 2)
 
-    random_distances = random.sample(range(rand_l), random.randint(*nr_of_pizzas))
+    random_distances = random.sample(
+        range(rand_l), random.randint(*nr_of_triangles)
+    )
     random_distances_pairs = [
         [
             random_distance,
-            (random_distance + int(random.uniform(rand_l // 28, rand_l // 7))) % rand_l,
+            (random_distance + int(random.uniform(rand_l // 28, rand_l // 7)))
+            % rand_l,
         ]
         for random_distance in random_distances
     ]
@@ -110,7 +113,9 @@ def pizza_noise(
         for i in range(len(random_points_pairs))
     ]
 
-    full_shapes = [[point for point in shape if point != []] for shape in full_shapes]
+    full_shapes = [
+        [point for point in shape if point != []] for shape in full_shapes
+    ]
 
     for shape in full_shapes:
         add = random.randint(0, 1)
@@ -126,20 +131,20 @@ def pizza_noise(
     return img
 
 
-class PizzaController(NoiseController):
+class TriangularController(NoiseController):
     """
-    Decorators can execute their behavior either before or after the call to a
-    wrapped object.
+    Triangular noise controller that creates triangular brightness variations
+    radiating from a center point.
     """
 
     def __init__(
         self,
-        nr_of_pizzas: tuple[int, int] = (3, 8),
+        nr_of_triangles: tuple[int, int] = (3, 8),
         center_point: tuple[int, int] = (320, 240),
         channels: int = 1,
         strength: tuple[int, int] = (10, 15),
     ) -> None:
-        self.nr_of_pizzas = nr_of_pizzas
+        self.nr_of_triangles = nr_of_triangles
         self.center_point = center_point
         self.channels = channels
         self.strength = strength
@@ -150,9 +155,9 @@ class PizzaController(NoiseController):
     def generate(
         self, img: npt.NDArray[np.uint8], epsilon: float
     ) -> npt.NDArray[np.uint8]:
-        return pizza_noise(
+        return triangular_noise(
             img,
-            self.nr_of_pizzas,
+            self.nr_of_triangles,
             self.center_point,
             self.strength,
             self.channels,

@@ -32,14 +32,14 @@ python scripts/generate_dataset.py \
     --path-average-noise data/average_noise/steel \
     --n-copies 50
 
-# Generate with multiple noise types (Perlin + Pizza)
+# Generate with multiple noise types (Perlin + Triangular)
 python scripts/generate_dataset.py \
-    --noise perlin pizza \
-    --output data/generated/perlin_pizza \
+    --noise perlin triangular \
+    --output data/generated/perlin_triangular \
     --n-copies 50 \
     --alpha 0.45 \
-    --nr-of-pizzas 3 8 \
-    --pizza-strength 20 30
+    --nr-of-triangulars 3 8 \
+    --triangular-strength 20 30
 ```
 
 ### Available Noise Types
@@ -48,7 +48,7 @@ python scripts/generate_dataset.py \
 2. **average** - Uses averaged real topography images
 3. **perlin** - Perlin noise with CLAHE enhancement
 4. **bubble** - Gaussian bubble artifacts
-5. **pizza** - Triangular brightness variations
+5. **triangular** - Triangular brightness variations
 6. **blackbox** - Rectangular occlusions
 7. **fourier** - Frequency/amplitude domain noise
 
@@ -88,10 +88,10 @@ python scripts/generate_dataset.py \
 --range-of-blobs MIN MAX   Number of blobs (default: 30 40)
 ```
 
-#### Pizza Noise
+#### Triangular Noise
 ```
---nr-of-pizzas MIN MAX     Number of segments (default: 3 8)
---pizza-strength MIN MAX   Brightness change (default: 10 15)
+--nr-of-triangulars MIN MAX     Number of segments (default: 3 8)
+--triangular-strength MIN MAX   Brightness change (default: 10 15)
 ```
 
 #### Fourier Noise
@@ -134,13 +134,13 @@ python scripts/generate_dataset.py \
 ### Generate Combined Noise Dataset
 
 ```bash
-# Perlin + Pizza + Bubble noise
+# Perlin + Triangular + Bubble noise
 python scripts/generate_dataset.py \
-    --noise perlin pizza bubble \
+    --noise perlin triangular bubble \
     --output data/generated/combined \
     --n-copies 50 \
     --alpha 0.45 \
-    --nr-of-pizzas 3 5 \
+    --nr-of-triangulars 3 5 \
     --range-of-blobs 30 40 \
     --seed 42
 ```
@@ -208,4 +208,4 @@ The script generates:
 2. **Start small** - Test with small epsilon ranges before generating full datasets
 3. **Monitor disk space** - 50,000 images (640×480) ≈ 2-3 GB
 4. **Use parallel processing** - Split large jobs across multiple processes
-5. **Combine noise types** - Perlin + Pizza noise often produces realistic results
+5. **Combine noise types** - Perlin + Triangular noise often produces realistic results

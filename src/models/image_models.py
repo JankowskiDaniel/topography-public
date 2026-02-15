@@ -17,8 +17,8 @@ class AverageNoiseParams(BaseModel):
     noise_used: int
 
 
-class PizzaNoiseParams(BaseModel):
-    pizza_count: int
+class TriangularNoiseParams(BaseModel):
+    triangular_count: int
     center_width: int
     center_height: int
     strength: int

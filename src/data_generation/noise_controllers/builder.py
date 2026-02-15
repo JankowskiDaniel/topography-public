@@ -6,7 +6,7 @@ from src.data_generation.noise_controllers.noise_blackbox import (
     BlackboxController,
 )
 from src.data_generation.noise_controllers.noise_bubble import BubbleController
-from src.data_generation.noise_controllers.noise_pizza import PizzaController
+from src.data_generation.noise_controllers.noise_triangular import TriangularController
 from src.data_generation.noise_controllers.noise_fourier import (
     FourierController,
 )
@@ -19,7 +19,7 @@ CONTROLLERS = {
     "average": AverageController,
     "blackbox": BlackboxController,
     "bubble": BubbleController,
-    "pizza": PizzaController,
+    "triangular": TriangularController,
     "fourier": FourierController,
     "perlin": PerlinController,
 }
@@ -41,7 +41,7 @@ def _validate_bubble_noise_params(**params) -> None:
     pass
 
 
-def _validate_pizza_noise_params(**params) -> None:
+def _validate_triangular_noise_params(**params) -> None:
     pass
 
 
@@ -57,7 +57,7 @@ VALIDATORS = {
     "average": _validate_average_noise_params,
     "blackbox": _validate_blackbox_noise_params,
     "bubble": _validate_bubble_noise_params,
-    "pizza": _validate_pizza_noise_params,
+    "triangular": _validate_triangular_noise_params,
     "fourier": _validate_fourier_noise_params,
     "perlin": _validate_perlin_noise_params,
 }

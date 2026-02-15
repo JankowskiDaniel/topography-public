@@ -49,7 +49,7 @@ Topographic measurements using interference patterns require accurate epsilon va
 3. **Average**: Real material-based averaged noise (steel/ceramic)
 4. **Fourier**: Frequency/amplitude domain noise from real images
 5. **Bubble**: Gaussian-distributed bubble artifacts
-6. **Pizza**: Triangular brightness variations
+6. **Triangular**: Triangular brightness variations
 7. **Blackbox**: Rectangular occlusions
 
 ### Data Generation
@@ -127,7 +127,7 @@ python scripts/generate_dataset.py \
     --epsilon-range 0.0 0.1 \
     --epsilon-step 0.01 \
     --n-copies 10 \
-    --seed 42
+    --seed 23
 ```
 
 ### Use as Python Library
@@ -144,7 +144,7 @@ generate_dataset(
     epsilon_range=(0.0, 1.0),
     epsilon_step=0.001,
     size=(640, 480),
-    seed=42,
+    seed=23,
     alpha=0.45,  # Perlin-specific parameter
 )
 ```
@@ -187,7 +187,7 @@ python scripts/generate_dataset.py \
     --noise pure \
     --output data/generated/pure \
     --n-copies 50 \
-    --seed 42
+    --seed 23
 ```
 
 #### Perlin Noise
@@ -197,7 +197,7 @@ python scripts/generate_dataset.py \
     --output data/generated/perlin \
     --n-copies 50 \
     --alpha 0.45 \
-    --seed 42
+    --seed 23
 ```
 
 #### Average Noise (Requires Pre-computed Noise Images)
@@ -207,19 +207,19 @@ python scripts/generate_dataset.py \
     --output data/generated/average \
     --path-average-noise data/average_noise/steel \
     --n-copies 50 \
-    --seed 42
+    --seed 23
 ```
 
 #### Combined Noise Types
 ```bash
 python scripts/generate_dataset.py \
-    --noise perlin pizza \
+    --noise perlin triangular \
     --output data/generated/combined \
     --n-copies 50 \
     --alpha 0.45 \
-    --nr-of-pizzas 3 8 \
-    --pizza-strength 20 30 \
-    --seed 42
+    --nr-of-triangulars 3 8 \
+    --triangular-strength 20 30 \
+    --seed 23
 ```
 
 ### Common Parameters
@@ -255,10 +255,10 @@ python scripts/generate_dataset.py \
 --range-of-blobs 30 40          # Number of blobs
 ```
 
-#### Pizza Noise
+#### Triangular Noise
 ```bash
---nr-of-pizzas 3 8              # Number of segments
---pizza-strength 10 15          # Brightness change
+--nr-of-triangulars 3 8              # Number of segments
+--triangular-strength 10 15          # Brightness change
 ```
 
 #### Fourier Noise
@@ -283,7 +283,7 @@ python scripts/generate_dataset.py \
     --epsilon-range 0.0 0.25 \
     --n-copies 50 \
     --name-prefix p1 \
-    --seed 42 &
+    --seed 23 &
 
 # Process 2
 python scripts/generate_dataset.py \
@@ -326,7 +326,7 @@ topography-public/
 │   │   │   ├── noise_average.py      # Average noise
 │   │   │   ├── noise_fourier.py      # Fourier noise
 │   │   │   ├── noise_bubble.py       # Bubble noise
-│   │   │   ├── noise_pizza.py        # Pizza noise
+│   │   │   ├── noise_triangular.py        # Triangular noise
 │   │   │   └── noise_blackbox.py     # Blackbox noise
 │   │   └── datasets/                 # Dataset generation
 │   │       ├── generator.py          # Main generator
@@ -464,7 +464,7 @@ python scripts/generate_dataset.py \
     --epsilon-range 0.0 1.0 \
     --epsilon-step 0.01 \
     --n-copies 10 \
-    --seed 42
+    --seed 23
 ```
 
 ### Example 2: Full Production Dataset
@@ -479,7 +479,7 @@ python scripts/generate_dataset.py \
     --n-copies 50 \
     --alpha 0.45 \
     --scale 100.0 \
-    --seed 42
+    --seed 23
 ```
 
 ### Example 3: Multi-Noise Realistic Dataset
@@ -487,14 +487,14 @@ python scripts/generate_dataset.py \
 ```bash
 # Combined noise for maximum realism
 python scripts/generate_dataset.py \
-    --noise perlin pizza bubble \
+    --noise perlin triangular bubble \
     --output data/generated/realistic \
     --n-copies 50 \
     --alpha 0.45 \
-    --nr-of-pizzas 3 5 \
-    --pizza-strength 20 30 \
+    --nr-of-triangulars 3 5 \
+    --triangular-strength 20 30 \
     --range-of-blobs 30 40 \
-    --seed 42
+    --seed 23
 ```
 
 ### Example 4: Use Pre-built Scripts

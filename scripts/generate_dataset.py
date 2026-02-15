@@ -18,9 +18,9 @@ Examples:
     python scripts/generate_dataset.py --noise perlin --output data/generated/perlin \
         --alpha 0.45
 
-    # Generate with multiple noise types (perlin + pizza)
-    python scripts/generate_dataset.py --noise perlin pizza --output data/generated/combo \
-        --alpha 0.45 --nr-of-pizzas 3 8
+    # Generate with multiple noise types (perlin + triangular)
+    python scripts/generate_dataset.py --noise perlin triangular --output data/generated/combo \
+        --alpha 0.45 --nr-of-triangles 3 8
 
     # Generate with custom epsilon range
     python scripts/generate_dataset.py --noise perlin --output data/generated/test \
@@ -50,7 +50,7 @@ def parse_args():
         type=str,
         nargs="+",
         required=True,
-        choices=["pure", "average", "blackbox", "bubble", "pizza", "fourier", "perlin"],
+        choices=["pure", "average", "blackbox", "bubble", "triangular", "fourier", "perlin"],
         help="Noise type(s) to apply. Use 'pure' for no noise. Multiple types can be combined.",
     )
     parser.add_argument(
@@ -171,22 +171,22 @@ def parse_args():
         help="Range of blobs for bubble noise (default: 30 40)",
     )
 
-    # Pizza noise
+    # Triangular noise
     noise_group.add_argument(
-        "--nr-of-pizzas",
+        "--nr-of-triangles",
         type=int,
         nargs=2,
         default=[3, 8],
         metavar=("MIN", "MAX"),
-        help="Range of pizza segments (default: 3 8)",
+        help="Range of triangular segments (default: 3 8)",
     )
     noise_group.add_argument(
-        "--pizza-strength",
+        "--triangular-strength",
         type=int,
         nargs=2,
         default=[10, 15],
         metavar=("MIN", "MAX"),
-        help="Pizza noise strength range (default: 10 15)",
+        help="Triangular noise strength range (default: 10 15)",
     )
 
     # Fourier noise
@@ -323,9 +323,9 @@ def build_noise_kwargs(args):
                 kwargs["spray_diameter"] = args.spray_diameter
             kwargs["range_of_blobs"] = tuple(args.range_of_blobs)
 
-        elif noise_type == "pizza":
-            kwargs["nr_of_pizzas"] = tuple(args.nr_of_pizzas)
-            kwargs["strength"] = tuple(args.pizza_strength)
+        elif noise_type == "triangular":
+            kwargs["nr_of_triangles"] = tuple(args.nr_of_triangles)
+            kwargs["strength"] = tuple(args.triangular_strength)
             kwargs["center_point"] = (args.size[0] // 2, args.size[1] // 2)
             kwargs["channels"] = 1
 
