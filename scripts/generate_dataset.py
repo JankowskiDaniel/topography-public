@@ -50,7 +50,15 @@ def parse_args():
         type=str,
         nargs="+",
         required=True,
-        choices=["pure", "average", "blackbox", "bubble", "triangular", "fourier", "perlin"],
+        choices=[
+            "pure",
+            "average",
+            "blackbox",
+            "bubble",
+            "triangular",
+            "fourier",
+            "perlin",
+        ],
         help="Noise type(s) to apply. Use 'pure' for no noise. Multiple types can be combined.",
     )
     parser.add_argument(

@@ -64,7 +64,7 @@ def apply_clahe(
     """
     clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
     enhanced = clahe.apply(image)
-    return enhanced
+    return enhanced  # type: ignore[return-value]
 
 
 class PerlinController(NoiseController):
@@ -151,7 +151,7 @@ class PerlinController(NoiseController):
 
         # Apply CLAHE for contrast enhancement
         enhanced = apply_clahe(
-            blended,
+            blended,  # type: ignore[arg-type]
             clip_limit=self.clip_limits[self.noise_index],
             tile_grid_size=self.grid_sizes_chosen[self.noise_index],
         )

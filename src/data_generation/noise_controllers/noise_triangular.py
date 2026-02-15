@@ -15,7 +15,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
     mask = cv2.merge([mask] * channels)
     inversed_mask = cv2.bitwise_not(mask)
 
-    image_rect = img_copy[y: y + h, x: x + w]
+    image_rect = img_copy[y : y + h, x : x + w]
 
     change = strenght
 
@@ -29,7 +29,7 @@ def change_region(img, pts, channels=3, add=True, strenght=10):
 
     full_rect = cv2.add(image_rect_masked, image_rect_unmasked)
 
-    img_copy[y: y + h, x: x + w] = full_rect
+    img_copy[y : y + h, x : x + w] = full_rect
     return img_copy
 
 
@@ -86,14 +86,11 @@ def triangular_noise(
 
     rand_l = 2 * (h + w - 2)
 
-    random_distances = random.sample(
-        range(rand_l), random.randint(*nr_of_triangles)
-    )
+    random_distances = random.sample(range(rand_l), random.randint(*nr_of_triangles))
     random_distances_pairs = [
         [
             random_distance,
-            (random_distance + int(random.uniform(rand_l // 28, rand_l // 7)))
-            % rand_l,
+            (random_distance + int(random.uniform(rand_l // 28, rand_l // 7))) % rand_l,
         ]
         for random_distance in random_distances
     ]
@@ -113,9 +110,7 @@ def triangular_noise(
         for i in range(len(random_points_pairs))
     ]
 
-    full_shapes = [
-        [point for point in shape if point != []] for shape in full_shapes
-    ]
+    full_shapes = [[point for point in shape if point != []] for shape in full_shapes]
 
     for shape in full_shapes:
         add = random.randint(0, 1)

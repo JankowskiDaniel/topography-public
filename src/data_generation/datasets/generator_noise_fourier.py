@@ -112,7 +112,7 @@ def _generate_noise_image_frequency_domain(
     img_filtered = np.abs(np.fft.ifft2(np.fft.ifftshift(img_fft_filtered)))
 
     # Normalize the result to the range [0, 255] and convert to uint8
-    img_filtered_normalized = cv2.normalize(img_filtered, None, 0, 255, cv2.NORM_MINMAX)
+    img_filtered_normalized = cv2.normalize(img_filtered, None, 0, 255, cv2.NORM_MINMAX)  # type: ignore[call-overload]
     img_filtered_normalized = np.uint8(img_filtered_normalized)
 
     # Extract the raw image name without extension
