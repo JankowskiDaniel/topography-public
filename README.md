@@ -310,6 +310,178 @@ Generated datasets include:
    - `min_brightness`, `max_brightness`: Brightness range
    - `used_noise`: Noise index (for average noise)
 
+
+### 🔬 Generating Noise from Raw Measurements
+
+To use **average** or **fourier** noise types, you first need to generate noise images from real measurement data. This process extracts realistic noise patterns from raw topography measurements.
+
+#### Prerequisites
+
+- Raw measurement images from real topographic measurements
+- Images should be named sequentially: `00000.png`, `00001.png`, ..., `NNNNN.png`
+- All images in a single directory
+- For Fourier noise: CSV file with epsilon values for each raw image
+
+#### Average Noise Generation
+
+Average noise is created by averaging multiple raw measurement images to extract the underlying noise pattern.
+
+##### How It Works
+
+1. Randomly selects N raw images (typically 100)
+2. Averages them together to extract noise
+3. Saves the averaged noise image
+4. Repeats for desired number of noise images
+
+##### Usage
+
+```python
+from src.data_generation.datasets.generator_noise_average import generate_average_noise_dataset
+
+# Generate average noise images
+generate_average_noise_dataset(
+    path="data/average_noise/steel",           # Output directory
+    size=(640, 480),                           # Image size
+    num_images=50,                             # Number of noise images to create
+    num_used_raw_images=100,                   # Raw images averaged per noise image
+    path_to_raw="data/raw/steel/",            # Path to raw measurement images
+    zipfile=False,                             # Save as individual files or ZIP
+    zip_filename="average_noise.zip",          # ZIP filename (if zipfile=True)
+    seed=42                                    # Random seed for reproducibility
+)
+```
+
+##### Parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `path` | Output directory for noise images | Required |
+| `size` | Size of generated noise images | (640, 480) |
+| `num_images` | Number of noise images to create | 50 |
+| `num_used_raw_images` | Raw images averaged per noise (min: 20) | 100 |
+| `path_to_raw` | Directory containing raw measurement images | Required |
+| `zipfile` | Save to ZIP archive | False |
+| `zip_filename` | ZIP filename (if zipfile=True) | "dataset.zip" |
+| `seed` | Random seed for reproducibility | None |
+
+##### Requirements
+
+- Minimum 20 raw images must be used per noise image
+- Raw images must be named: `00000.png` to `NNNNN.png` (5 digits with leading zeros)
+- Directory should contain only raw image files
+
+##### Example: Generate Steel Average Noise
+
+```python
+# Generate 100 average noise images for steel material
+# Each noise image is created by averaging 150 raw measurements
+generate_average_noise_dataset(
+    path="data/average_noise/steel",
+    size=(640, 480),
+    num_images=100,
+    num_used_raw_images=150,
+    path_to_raw="data/raw/steel/1channel/",
+    seed=42
+)
+```
+
+#### Fourier Noise Generation
+
+Fourier noise extracts noise patterns in the frequency domain, either from amplitude or frequency components.
+
+##### How It Works
+
+1. Reads epsilon values from CSV file
+2. For each epsilon value, selects a matching raw image
+3. Applies FFT (Fast Fourier Transform)
+4. Filters low frequencies (keeps high-frequency noise)
+5. Transforms back to spatial domain
+6. Saves the extracted noise pattern
+
+##### Usage
+
+```python
+from src.data_generation.datasets.generator_noise_fourier import generate_fourier_noise_dataset
+
+# Generate Fourier noise images (amplitude domain)
+generate_fourier_noise_dataset(
+    path="data/fourier_noise/steel/ampl",              # Output directory
+    raw_epsilons_path="data/raw/steel/",               # Directory with raw images + CSV
+    size=(640, 480),                                    # Image size
+    num_images=50,                                      # Number of noise images
+    pass_value=10,                                      # FFT filter size
+    domain="amplitude",                                 # Domain: 'amplitude' or 'frequency'
+    zipfile=False,                                      # Save as files or ZIP
+    zip_filename="fourier_noise.zip",                   # ZIP filename (if zipfile=True)
+    seed=42                                             # Random seed
+)
+```
+
+##### Parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `path` | Output directory for noise images | Required |
+| `raw_epsilons_path` | Directory containing raw images + epsilon CSV | Required |
+| `size` | Size of generated noise images | (640, 480) |
+| `num_images` | Number of noise images to create | 50 |
+| `pass_value` | FFT filter size (lower = more filtering) | 10 |
+| `domain` | Domain type: 'amplitude' or 'frequency' | 'amplitude' |
+| `zipfile` | Save to ZIP archive | False |
+| `zip_filename` | ZIP filename (if zipfile=True) | "dataset.zip" |
+| `seed` | Random seed for reproducibility | None |
+
+##### Requirements
+
+- **CSV file** named `raw_epsilons.csv` in `raw_epsilons_path` directory
+- CSV must contain columns: `filename` and `epsilon`
+- Raw images must match filenames in CSV
+- Epsilon values should cover the range you want to generate
+
+##### CSV Format Example
+
+```csv
+filename,epsilon
+00000.png,0.123
+00001.png,0.456
+00002.png,0.789
+...
+```
+
+##### Example: Generate Frequency Domain Noise
+
+```python
+# Generate 2000 Fourier noise images in frequency domain
+generate_fourier_noise_dataset(
+    path="data/fourier_noise/steel/freq",
+    raw_epsilons_path="data/raw/steel/1channel/",  # Contains raw_epsilons.csv
+    num_images=2000,
+    pass_value=4,                                   # Stricter filtering
+    domain="frequency",
+    seed=23
+)
+```
+
+#### Tips for Noise Generation
+
+1. **Average Noise**:
+   - Use 100+ raw images per noise for better averaging
+   - More noise images = more variety in training
+   - Separate noise for different materials (steel, ceramic)
+
+2. **Fourier Noise**:
+   - `pass_value=4` gives good high-frequency noise extraction
+   - Lower `pass_value` = stricter filtering (more noise removal)
+   - Amplitude domain often works better than frequency domain
+   - Ensure epsilon values in CSV are accurate
+
+3. **General**:
+   - Always use seeds for reproducibility
+   - Generate separate noise for each material type
+   - Test with small `num_images` first
+   - Verify noise quality by visual inspection
+
+
 ## 📁 Project Structure
 
 ```
