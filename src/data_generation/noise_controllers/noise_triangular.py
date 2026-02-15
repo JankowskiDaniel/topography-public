@@ -1,0 +1,159 @@
+import random
+import cv2
+import numpy as np
+import numpy.typing as npt
+from src.data_generation.noise_controllers.decorator import NoiseController
+
+
+def change_region(img, pts, channels=3, add=True, strenght=10):
+    img_copy = img.copy()
+    x, y, w, h = cv2.boundingRect(pts)
+    pts = pts - np.array([x, y])
+
+    mask = np.zeros((h, w), dtype=np.uint8)
+    mask = cv2.fillConvexPoly(mask, pts, (255, 255, 255))
+    mask = cv2.merge([mask] * channels)
+    inversed_mask = cv2.bitwise_not(mask)
+
+    image_rect = img_copy[y : y + h, x : x + w]
+
+    change = strenght
+
+    if add:
+        image_rect_changed = cv2.add(image_rect, change)
+    else:
+        image_rect_changed = cv2.subtract(image_rect, change)
+
+    image_rect_masked = cv2.bitwise_and(mask, image_rect_changed)
+    image_rect_unmasked = cv2.bitwise_and(inversed_mask, image_rect)
+
+    full_rect = cv2.add(image_rect_masked, image_rect_unmasked)
+
+    img_copy[y : y + h, x : x + w] = full_rect
+    return img_copy
+
+
+def from_distance_to_point(distance, w, h):
+    if distance // w == 0:
+        return [distance, 0], "top"
+    elif distance // (w + h - 1) == 0:
+        return [w - 1, distance % (w - 1)], "right"
+    elif distance // (2 * w + h - 2) == 0:
+        return [w - 1 - distance % (w + h - 2), h - 1], "bottom"
+    else:
+        return [0, h - 1 - distance % (2 * w + h - 3)], "left"
+
+
+def corner_point_if_feasible(pts):
+    p1, p2 = pts
+    if p1[1] == p2[1]:
+        return []
+    elif p1[1] == "bottom" or p1[1] == "top":
+        return [p2[0][0], p1[0][1]]
+    else:
+        return [p1[0][0], p2[0][1]]
+
+
+def triangular_noise(
+    img: np.ndarray,
+    nr_of_triangles: tuple[int, int] = (5, 5),
+    center_point: tuple[int, int] = (320, 240),
+    strength: tuple[int, int] = (10, 15),
+    channels: int = 3,
+):
+    """
+    Randomly brightens or darkens triangular areas of the
+    image starting in the center.
+
+    ---
+
+    Attributes:
+    * img (numpy.ndarray): input image
+    * nr_of_triangles (tuple[int,int]): a list containing the
+    minimum and maximum number of modified areas
+    * center_point (tuple[int,int]): center location
+    * strength (int): defines how intense the change will be
+    * channels (int): number of image channels
+
+    ---
+
+    Returns:
+    * modified image (numpy.ndarray)
+    """
+    h, w = img.shape
+    # seed = 12 [12,13,14..22]
+    # seed = 13 [13, 23]
+
+    rand_l = 2 * (h + w - 2)
+
+    random_distances = random.sample(range(rand_l), random.randint(*nr_of_triangles))
+    random_distances_pairs = [
+        [
+            random_distance,
+            (random_distance + int(random.uniform(rand_l // 28, rand_l // 7))) % rand_l,
+        ]
+        for random_distance in random_distances
+    ]
+
+    random_points_pairs = [
+        [from_distance_to_point(x, w, h), from_distance_to_point(y, w, h)]
+        for x, y in random_distances_pairs
+    ]
+
+    corners = [corner_point_if_feasible(x) for x in random_points_pairs]
+
+    full_shapes = [
+        [center_point]
+        + [random_points_pairs[i][0][0]]
+        + [corners[i]]
+        + [random_points_pairs[i][1][0]]
+        for i in range(len(random_points_pairs))
+    ]
+
+    full_shapes = [[point for point in shape if point != []] for shape in full_shapes]
+
+    for shape in full_shapes:
+        add = random.randint(0, 1)
+        rand_strength = random.randint(*strength)
+        img = change_region(
+            img,
+            np.array(shape),
+            add=add,
+            strenght=rand_strength,
+            channels=channels,
+        )
+
+    return img
+
+
+class TriangularController(NoiseController):
+    """
+    Triangular noise controller that creates triangular brightness variations
+    radiating from a center point.
+    """
+
+    def __init__(
+        self,
+        nr_of_triangles: tuple[int, int] = (3, 8),
+        center_point: tuple[int, int] = (320, 240),
+        channels: int = 1,
+        strength: tuple[int, int] = (10, 15),
+    ) -> None:
+        self.nr_of_triangles = nr_of_triangles
+        self.center_point = center_point
+        self.channels = channels
+        self.strength = strength
+
+    def _set_additional_parameters(self, num_images: int) -> None:
+        self.num_images = num_images
+
+    def generate(
+        self, img: npt.NDArray[np.uint8], epsilon: float
+    ) -> npt.NDArray[np.uint8]:
+        return triangular_noise(
+            img,
+            self.nr_of_triangles,
+            self.center_point,
+            self.strength,
+            self.channels,
+        )

@@ -1,8 +1,25 @@
-# Images
-data/raw/ceramic/*.png
-data/raw/steel/*.png
-data/noise/ceramic/*.png
-data/noise/steel/*.png
+# Gerenated data
+data/average_noise/*/*.png
+data/fourier_noise/*/*/*.png
+data/fourier_noise/*/*/*.csv
+data/raw/*/*.png
+data/generated/*/*/*.png
+data/generated/*/*/*.csv
+data/generated/*/*/*/*.zip
+data/generated/*/*/*/*.csv
+data/generated/*/*/*.zip
+data/raw
+data/steel/*
+/venv_torch
+setup.py
+.vscode
+data/generated/*/*.png
+data/generated/blackbox/
+data/noise/
+data/generated/
+data/fourier_noise/
+data/average_noise/
+data/balanced_fourier/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -133,3 +150,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.claude/
+.ruff_cache/
