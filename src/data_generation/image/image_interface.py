@@ -10,13 +10,9 @@ class AbstractGenerator(ABC):
     """
 
     @abstractmethod
-    def _update_image_stats(
-        self, epsilon: float, ring_center: tuple[int, int]
-    ) -> None:
+    def _update_image_stats(self, epsilon: float, ring_center: tuple[int, int]) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def generate(
-        self, epsilon: float, img_index: int
-    ) -> npt.NDArray[np.uint8]:
+    def generate(self, epsilon: float, img_index: int) -> npt.NDArray[np.uint8]:
         raise NotImplementedError

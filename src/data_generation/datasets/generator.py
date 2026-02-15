@@ -46,9 +46,7 @@ def generate_dataset(
         np.random.seed(seed)
 
     min_epsilon, max_epsilon = epsilon_range
-    epsilons = np.arange(
-        start=min_epsilon, stop=max_epsilon, step=epsilon_step
-    )
+    epsilons = np.arange(start=min_epsilon, stop=max_epsilon, step=epsilon_step)
 
     num_images = len(epsilons) * n_copies
 
@@ -69,7 +67,6 @@ def generate_dataset(
     for _epsilon in tqdm(epsilons):
         _epsilon = float("{:.3f}".format(_epsilon))
         for _ in range(n_copies):
-
             # draw a random brightness in the range
             # first value from 80-100
             # second value from 190-210
@@ -95,9 +92,7 @@ def generate_dataset(
                 save2directory(img, img_filename, path)
 
             if save_parameters:
-                pure_parameters: PureImageParams = (
-                    pure_generator.current_image_stats
-                )
+                pure_parameters: PureImageParams = pure_generator.current_image_stats
                 img_details = ImageDetails(
                     filename=img_filename,
                     width=pure_parameters.width,

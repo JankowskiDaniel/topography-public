@@ -72,9 +72,7 @@ def _generate_noise_image(
         # in case where path to raw images is not passed, read sample raw
         # images from package (available only if you installed package via pip)
         if path_to_raw:
-            raw_filename = (
-                f"{path_to_raw}/{str(used_raw_images[i]).zfill(5)}.png"  # type: ignore  # noqa: E501
-            )
+            raw_filename = f"{path_to_raw}/{str(used_raw_images[i]).zfill(5)}.png"  # type: ignore  # noqa: E501
         else:
             raw_filename = pkg_resources.resource_filename(
                 __name__,
@@ -151,10 +149,7 @@ def generate_average_noise_dataset(
 
     for frame in tqdm(range(num_images)):
         noise_image = _generate_noise_image(
-            size,
-            num_used_raw_images,
-            path_to_raw,
-            raw_images_per_frame[frame]
+            size, num_used_raw_images, path_to_raw, raw_images_per_frame[frame]
         )
         if zipfile:
             save2zip(
@@ -164,10 +159,7 @@ def generate_average_noise_dataset(
                 path=path,
             )
         else:
-            save2directory(noise_image,
-                           img_filename=f"{frame}.png",
-                           path=path
-                           )
+            save2directory(noise_image, img_filename=f"{frame}.png", path=path)
 
 
 if __name__ == "__main__":

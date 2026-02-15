@@ -28,8 +28,8 @@ def add_blackbox(
     blackbox_h = min(blackbox_h, h - blackbox_y)
 
     img[
-        blackbox_y: blackbox_y + blackbox_h,
-        blackbox_x: blackbox_x + blackbox_w,
+        blackbox_y : blackbox_y + blackbox_h,
+        blackbox_x : blackbox_x + blackbox_w,
     ] = 0
 
     return img
@@ -69,7 +69,9 @@ class BlackboxController(NoiseController):
 
         self.noise_index = 0
 
-    def generate(self, img: npt.NDArray[np.uint8], epsilon: float) -> npt.NDArray[np.uint8]:
+    def generate(
+        self, img: npt.NDArray[np.uint8], epsilon: float
+    ) -> npt.NDArray[np.uint8]:
         noised_image = add_blackbox(
             img,
             blackbox_w=self.choosen_widths[self.noise_index],

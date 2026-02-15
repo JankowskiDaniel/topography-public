@@ -9,13 +9,9 @@ import pandas as pd
 def prepareDataFrame(csv_paths: list[str], images_path: str):
     for csv_path in csv_paths:
         if not os.path.isfile(csv_path):
-            raise FileNotFoundError(
-                f"Provided file: {csv_path} does not exist."
-            )
+            raise FileNotFoundError(f"Provided file: {csv_path} does not exist.")
     if not os.path.isdir(images_path):
-        raise FileNotFoundError(
-            f"Provided directory: {images_path} does not exist."
-        )
+        raise FileNotFoundError(f"Provided directory: {images_path} does not exist.")
 
     # mapping path to dataframe with full paths to images
     def mapPath2DataFrame(csv_path):

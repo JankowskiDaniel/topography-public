@@ -98,9 +98,7 @@ class ImageDetails(BaseModel):
     @validator("min_brightness")
     def _check_min_brightness(cls, min_brightness) -> None:
         if min_brightness < 40 or min_brightness > 120:
-            raise ValueError(
-                "Minimal brightness must be in in range (40; 120)"
-            )
+            raise ValueError("Minimal brightness must be in in range (40; 120)")
         return min_brightness
 
     @validator("max_brightness")

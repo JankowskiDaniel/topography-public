@@ -20,9 +20,7 @@ class AnalyticalMathod:
         vector = img.mean(axis=0)
 
         # smothing the vector to get rid of noise ##############
-        vector = cv2.filter2D(
-            vector, -1, np.ones(filter_size) / filter_size
-        ).flatten()
+        vector = cv2.filter2D(vector, -1, np.ones(filter_size) / filter_size).flatten()
 
         if "peaks_plot" in check:
             plt.figure()
@@ -61,11 +59,11 @@ class AnalyticalMathod:
             if mode == "x":
                 tres == 5
             while x2 - x1 >= tres:
-                vec1 = distances[x1: x1 + 2]
-                vec2 = distances[x2 - 1: x2 + 1][::-1]
+                vec1 = distances[x1 : x1 + 2]
+                vec2 = distances[x2 - 1 : x2 + 1][::-1]
                 if mode == "x":
-                    vec1 = distances[x1: x1 + 3]
-                    vec2 = distances[x2 - 2: x2 + 1][::-1]
+                    vec1 = distances[x1 : x1 + 3]
+                    vec2 = distances[x2 - 2 : x2 + 1][::-1]
 
                 difference = np.sum(np.abs(vec1 - vec2))
                 if difference <= 3:
@@ -92,9 +90,7 @@ class AnalyticalMathod:
                 i2 -= 1
         return i1, i2
 
-    def calculate_epsilon(
-        self, img, check=[], blur_size=20, vector_filter_size=10
-    ):
+    def calculate_epsilon(self, img, check=[], blur_size=20, vector_filter_size=10):
         if check:
             print("ANALYSIS")
 
@@ -102,8 +98,7 @@ class AnalyticalMathod:
         img_tmp = cv2.filter2D(
             img,
             -1,
-            np.ones(blur_size**2).reshape((blur_size, blur_size))
-            / blur_size**2,
+            np.ones(blur_size**2).reshape((blur_size, blur_size)) / blur_size**2,
         )
 
         # coordinates of center of rings
@@ -112,12 +107,10 @@ class AnalyticalMathod:
             y = 240
 
         # middle strip
-        strip = img_tmp[y - 20: y + 20, :]
+        strip = img_tmp[y - 20 : y + 20, :]
 
         # find middle more accurately
-        maxima, _, x_new = self.detect_middle_x(
-            strip, vector_filter_size, check=check
-        )
+        maxima, _, x_new = self.detect_middle_x(strip, vector_filter_size, check=check)
         if x_new > 400:
             x_new = 320
 
@@ -138,12 +131,12 @@ class AnalyticalMathod:
         if (idx2 - idx1) % 2 == 0:
             left_distances, right_distances = (
                 distances_from_x[:idx][::-1],
-                distances_from_x[idx + 1:],
+                distances_from_x[idx + 1 :],
             )
         else:
             left_distances, right_distances = (
                 distances_from_x[: idx + 1][::-1],
-                distances_from_x[idx + 1:],
+                distances_from_x[idx + 1 :],
             )
 
         # we want the sequence of distances between the middle and the rings to
@@ -206,9 +199,7 @@ class AnalyticalMathod:
 
         if "plot" in check:
             plt.figure()
-            plt.plot(
-                np.arange(1, len(longer_sequence) + 1), (longer_sequence) ** 2
-            )
+            plt.plot(np.arange(1, len(longer_sequence) + 1), (longer_sequence) ** 2)
             plt.savefig("plot.png")
 
         # epsilon as a function of regression line interception with y axis
@@ -249,23 +240,18 @@ class AnalyticalMathodNew(AnalyticalMathod):
 
 
 class AnalyticalMathodOld(AnalyticalMathod):
-
     def detect_middle_x_y(self, img, vector_filter_size):
         # detect middle in horizontally
-        img_strip_x = img[240 - 40: 240 + 40, :]
-        _, _, x = self.detect_middle_x(
-            img=img_strip_x, filter_size=vector_filter_size
-        )
+        img_strip_x = img[240 - 40 : 240 + 40, :]
+        _, _, x = self.detect_middle_x(img=img_strip_x, filter_size=vector_filter_size)
 
         # detect middle vertically
-        img_strip_y = np.transpose(img[:, x - 20: x + 20])
+        img_strip_y = np.transpose(img[:, x - 20 : x + 20])
         _, _, y = self.detect_middle_x(
             img=img_strip_y, filter_size=vector_filter_size, mode="y"
         )
 
         # again horizontally for better accuracy
-        img_strip_x = img[y - 20: y + 20, :]
-        _, _, x = self.detect_middle_x(
-            img=img_strip_x, filter_size=vector_filter_size
-        )
+        img_strip_x = img[y - 20 : y + 20, :]
+        _, _, x = self.detect_middle_x(img=img_strip_x, filter_size=vector_filter_size)
         return x, y

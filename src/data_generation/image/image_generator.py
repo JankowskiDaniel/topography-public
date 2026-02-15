@@ -118,16 +118,12 @@ class PureImageGenerator(AbstractGenerator):
 
         self.current_image_stats: PureImageParams = PureImageParams()
 
-    def _update_image_stats(
-        self, epsilon: float, ring_center: tuple[int, int]
-    ) -> None:
+    def _update_image_stats(self, epsilon: float, ring_center: tuple[int, int]) -> None:
         self.current_image_stats.epsilon = epsilon
         self.current_image_stats.ring_center_width = ring_center[0]
         self.current_image_stats.ring_center_height = ring_center[1]
 
-    def generate(
-        self, epsilon: float, img_index: int
-    ) -> npt.NDArray[np.uint8]:
+    def generate(self, epsilon: float, img_index: int) -> npt.NDArray[np.uint8]:
         ring_center = (
             self.width_centers[img_index],
             self.height_centers[img_index],

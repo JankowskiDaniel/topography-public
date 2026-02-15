@@ -62,14 +62,10 @@ def _check_args(
                 "In case of exporting dataset to zipfile, filename must be provided."  # noqa: 501
             )
         if filename[-4:] != ".zip":
-            raise Exception(
-                'Provide filename with .zip extension, e.g. "dataset.zip"'
-            )
+            raise Exception('Provide filename with .zip extension, e.g. "dataset.zip"')
 
 
-def parameters2csv(
-    parameters: List[Dict], path: str, parameters_filename: str
-) -> None:
+def parameters2csv(parameters: List[Dict], path: str, parameters_filename: str) -> None:
     """Save parameters to .csv file
 
     :param parameters: Parameters for each image
@@ -80,9 +76,7 @@ def parameters2csv(
     :type parameters_filename: str
     """
     df = pd.DataFrame.from_dict(parameters)
-    df.to_csv(
-        os.path.join(path, parameters_filename), encoding="utf-8", index=False
-    )
+    df.to_csv(os.path.join(path, parameters_filename), encoding="utf-8", index=False)
 
 
 def _count_available_raw_images(path_to_raw: str | None) -> int:

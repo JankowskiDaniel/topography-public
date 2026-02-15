@@ -54,8 +54,8 @@ def _generate_noise_image_amplitude_domain(
     center_row, center_col = row // 2, col // 2
     mask = np.zeros((row, col), np.uint8)
     mask[
-        center_row - pass_value: center_row + pass_value,
-        center_col - pass_value: center_col + pass_value,
+        center_row - pass_value : center_row + pass_value,
+        center_col - pass_value : center_col + pass_value,
     ] = 1
     rgb_fft = rgb_fft * mask
     img = abs(np.fft.ifft2(rgb_fft)).clip(0, 255)
@@ -92,29 +92,32 @@ def _generate_noise_image_frequency_domain(
 
     img = cv2.imread(used_raw_image, cv2.IMREAD_GRAYSCALE)
     img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
-    
+
     # Perform Fourier transform and shift zero frequency component to the center
     img_fft = np.fft.fftshift(np.fft.fft2(img))
-    
+
     # Create a mask to keep the low frequencies
     row, col = img.shape
     mask = np.zeros((row, col), dtype=np.uint8)
     center_row, center_col = row // 2, col // 2
-    mask[center_row - pass_value:center_row + pass_value, center_col - pass_value:center_col + pass_value] = 1
-    
+    mask[
+        center_row - pass_value : center_row + pass_value,
+        center_col - pass_value : center_col + pass_value,
+    ] = 1
+
     # Apply the mask to the frequency domain representation
     img_fft_filtered = img_fft * mask
-    
+
     # Perform the inverse Fourier transform to get the image back in the spatial domain
     img_filtered = np.abs(np.fft.ifft2(np.fft.ifftshift(img_fft_filtered)))
-    
+
     # Normalize the result to the range [0, 255] and convert to uint8
     img_filtered_normalized = cv2.normalize(img_filtered, None, 0, 255, cv2.NORM_MINMAX)
     img_filtered_normalized = np.uint8(img_filtered_normalized)
-    
+
     # Extract the raw image name without extension
     raw_img = used_raw_image.split("/")[-1].split(".")[0]
-    
+
     return raw_img, img_filtered_normalized
 
 
@@ -181,7 +184,6 @@ def generate_fourier_noise_dataset(
         "frequency": _generate_noise_image_frequency_domain,
     }
 
-
     for img in tqdm(range(num_images)):
         raw_path, noise_image = gen_funct[domain](  # noqa: E501
             size=size,
@@ -215,5 +217,5 @@ if __name__ == "__main__":
         num_images=num_noise_images,
         seed=23,
         pass_value=4,
-        domain="frequency"
+        domain="frequency",
     )

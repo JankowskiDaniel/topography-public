@@ -106,7 +106,6 @@ def add_noise_frequency(
     :rtype: np.array
     """
 
-
     # TODO For this moment I do not have access to generated noise images,
     # so I created one half black half white
     noise_image = cv2.imread(noise_file_path)
@@ -150,21 +149,21 @@ class FourierController(NoiseController):
             path_noise = self.path_fourier_noise_ampl
         else:
             path_noise = self.path_fourier_noise_freq
-        
+
         self.noise_df = pd.read_csv(path_noise + "/epsilons.csv")
         # round epsilon to 3 decimal places
         self.noise_df["epsilon"] = self.noise_df["epsilon"].round(3)
         self.threshold = 0.01
 
-        self.available_noises = get_available_noises(
-            path_fourier_noise=path_noise
-        )
+        self.available_noises = get_available_noises(path_fourier_noise=path_noise)
         self.choosen_noises = np.random.choice(
             self.available_noises, num_images, replace=True
         )
         self.noise_index = 0
 
-    def generate(self, img: npt.NDArray[np.uint8], epsilon: float) -> npt.NDArray[np.uint8]:
+    def generate(
+        self, img: npt.NDArray[np.uint8], epsilon: float
+    ) -> npt.NDArray[np.uint8]:
         self.noise_df["diff"] = abs(self.noise_df.epsilon - epsilon)
         temp = self.noise_df[self.noise_df["diff"] < self.threshold]
 

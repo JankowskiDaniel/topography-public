@@ -78,7 +78,9 @@ class BubbleController(NoiseController):
     def _set_additional_parameters(self, num_images: int) -> None:
         self.num_images = num_images
 
-    def generate(self, img: npt.NDArray[np.uint8], epsilon: float) -> npt.NDArray[np.uint8]:
+    def generate(
+        self, img: npt.NDArray[np.uint8], epsilon: float
+    ) -> npt.NDArray[np.uint8]:
         """
         Decorators may call parent implementation of the generate, instead of
         calling the wrapped object directly. This approach simplifies extension
