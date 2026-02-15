@@ -2,7 +2,6 @@
 
 ![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.2.2-red.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 
 A comprehensive framework for generating synthetic topography datasets and training neural networks to predict epsilon values from interference pattern images. This repository implements multiple noise generation techniques to create realistic synthetic datasets that closely match real-world topographic measurements.
@@ -18,7 +17,6 @@ A comprehensive framework for generating synthetic topography datasets and train
 - [Neural Network Training](#neural-network-training)
 - [Analytical Methods](#analytical-methods)
 - [Examples](#examples)
-- [License](#license)
 
 ## 🔬 Overview
 
@@ -100,20 +98,6 @@ pip install -r requirements.txt
 ```bash
 pip install -e .
 ```
-
-### Dependencies
-
-Key packages:
-- `torch>=2.2.2` - Deep learning framework
-- `torchvision>=0.17.2` - Pre-trained models and transforms
-- `opencv-python>=4.9.0` - Image processing
-- `numpy>=1.26.3` - Numerical computations
-- `pandas>=2.2.1` - Data manipulation
-- `scikit-learn>=1.4.1` - Machine learning utilities
-- `noise>=1.2.2` - Perlin noise generation
-- `pydantic>=2.7.1` - Data validation
-
-See [requirements.txt](requirements.txt) for complete list.
 
 ## 🎯 Quick Start
 
