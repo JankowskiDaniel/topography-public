@@ -33,4 +33,4 @@ jobs:
     - name: Quality
       run: |
         mypy --config-file mypy.ini --ignore-missing-imports --explicit-package-bases src/
-        flake8 src/
+        ruff check src/
