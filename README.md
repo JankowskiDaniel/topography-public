@@ -6,18 +6,6 @@
 
 A comprehensive framework for generating synthetic topography datasets and training neural networks to predict epsilon values from interference pattern images. This repository implements multiple noise generation techniques to create realistic synthetic datasets that closely match real-world topographic measurements.
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Dataset Generation](#dataset-generation)
-- [Project Structure](#project-structure)
-- [Neural Network Training](#neural-network-training)
-- [Analytical Methods](#analytical-methods)
-- [Examples](#examples)
-
 ## 🔬 Overview
 
 This project addresses the challenge of epsilon value prediction in topographic interference patterns through synthetic data generation and deep learning. The framework generates realistic synthetic topography images using mathematical models combined with various noise types, then trains convolutional neural networks (ResNet-based) to predict epsilon values.
@@ -29,14 +17,6 @@ This project addresses the challenge of epsilon value prediction in topographic 
 - **Dataset Generator**: Unified interface for creating large-scale datasets
 - **Neural Network Training**: ResNet-based models for epsilon prediction
 - **Analytical Methods**: Exact method implementations for comparison
-
-### Scientific Context
-
-Topographic measurements using interference patterns require accurate epsilon value determination. This project provides tools to:
-- Generate synthetic training data at scale
-- Train models on steel and ceramic material patterns
-- Compare ML predictions against analytical methods
-- Evaluate model performance across different noise conditions
 
 ## ✨ Features
 
