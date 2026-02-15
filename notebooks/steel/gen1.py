@@ -50,13 +50,13 @@ GRID_SIZES = [(2, 2), (4, 4), (8, 8), (16, 16)]
 CLIP_RANGE = [1.5, 2.2]
 PERSISTANCE_RANGE = [0.7, 0.9]
 
-path_to_save = "../../data/generated/perlin/moved/"
-avg_path = "../../data/generated/average/steel/moved/"
-avg_params = pd.read_csv(avg_path + "moved_parameters.csv")
+path_to_save = "../../data/generated/perlin_ceramic_test/"
+avg_path = "../../data/generated/perlin_ceramic_test/pure_average/"
+avg_params = pd.read_csv(avg_path + "parameters.csv")
 perlin_params = []
 
 # take first 2500 rows
-avg_params = avg_params.iloc[:7500]
+avg_params = avg_params.iloc[:5000]
 
 counter = 0
 alpha = 0.45

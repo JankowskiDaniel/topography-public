@@ -97,17 +97,25 @@ def plot_epsilon_distribution_ax(df, title, ax, color='red'):
 def plot_multiple_epsilon_distributions(dfs, titles):
     # if len(dfs) != 5 or len(titles) != 5:
     #     raise ValueError("The function requires exactly 5 dataframes and 5 titles.")
-    
+    n_plots = len(dfs)
     # Create a 2x3 grid for subplots
-    fig, axes = plt.subplots(nrows=1, ncols=6, figsize=(35, 8))
+    fig, axes = plt.subplots(nrows=1, ncols=n_plots, figsize=(35, 8))
 
     # Plot each dataframe on its respective subplot
-    plot_epsilon_distribution_ax(dfs[0], titles[0], axes[0])
-    plot_epsilon_distribution_ax(dfs[1], titles[1], axes[1])
-    plot_epsilon_distribution_ax(dfs[2], titles[2], axes[2])
-    plot_epsilon_distribution_ax(dfs[3], titles[3], axes[3])
-    plot_epsilon_distribution_ax(dfs[4], titles[4], axes[4])
-    plot_epsilon_distribution_ax(dfs[5], titles[5], axes[5], color='blue')
+
+    for i in range(n_plots):
+        # if last plot, plot in blue
+        if i == n_plots - 1:
+            plot_epsilon_distribution_ax(dfs[i], titles[i], axes[i], color='blue')
+        else:
+            plot_epsilon_distribution_ax(dfs[i], titles[i], axes[i])
+
+    # plot_epsilon_distribution_ax(dfs[0], titles[0], axes[0])
+    # plot_epsilon_distribution_ax(dfs[1], titles[1], axes[1])
+    # plot_epsilon_distribution_ax(dfs[2], titles[2], axes[2])
+    # plot_epsilon_distribution_ax(dfs[3], titles[3], axes[3])
+    # plot_epsilon_distribution_ax(dfs[4], titles[4], axes[4])
+    # plot_epsilon_distribution_ax(dfs[5], titles[5], axes[5], color='blue')
 
 
     # Turn off the last unused subplot
@@ -141,12 +149,12 @@ def plot_average_cmae_ax(df: pd.DataFrame, title: str, ax, special_ranges: list 
 def plot_multiple_average_cmae(dfs, titles):
     # if len(dfs) != 5 or len(titles) != 5:
     #     raise ValueError("The function requires exactly 5 dataframes and 5 titles.")
-    
+    n_plots = len(dfs)
     # Create a 2x3 grid for subplots
-    fig, axes = plt.subplots(nrows=1, ncols=5, figsize=(35, 8))
+    fig, axes = plt.subplots(nrows=1, ncols=n_plots, figsize=(35, 8))
 
     # Plot each dataframe on its respective subplot
-    for i in range(5):
+    for i in range(n_plots):
         plot_average_cmae_ax(dfs[i], titles[i], axes[i])
 
 
