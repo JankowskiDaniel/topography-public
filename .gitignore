@@ -153,3 +153,4 @@ dmypy.json
 
 .claude/
 .ruff_cache/
+.Rproj.user

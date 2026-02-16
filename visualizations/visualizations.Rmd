@@ -1,0 +1,318 @@
+---
+title: "Deep Topography Visualizations"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(ggsci)
+library(patchwork)
+library(scales)
+library(tidyr)
+library(astsa)
+```
+
+## Data
+
+```{r}
+results_files <- list.files(path = "../results", pattern = "_results.csv", full.names = TRUE, recursive = TRUE)
+
+results_list <- lapply(results_files, function(file) {
+  data <- read.csv(file)
+  model_name <- sub(".*results/(.*?)-.*_results.csv", "\\1", file)
+  noise_type <- sub(".*-(.*?)_results.csv", "\\1", file)
+  data$model <- model_name
+  data$noise_type <- noise_type
+  return(data)
+})
+
+# Combine the list into one data.frame with columns: Model, NoiseType, and the rest of the data
+results_df <- bind_rows(results_list)
+results_df <- results_df %>% select(-X) %>%
+  mutate(diff = predicted - epsilon)
+
+results_df[results_df$diff < -0.5, "diff"] <- results_df[results_df$diff < -0.5, "diff"] + 1.0
+results_df[results_df$diff >  0.5, "diff"] <- results_df[results_df$diff >  0.5, "diff"] - 1.0
+
+
+results_df$noise_type <- factor(results_df$noise_type,
+                                levels = c("pure_noise", "average_noise", "pizza_noise", "bubble_noise", "blackbox_noise", "all_noise", "perlin_average", "perlin_average_moved"),
+                                labels = c("Pure", "Averaged", "Triangular", "Bubble", "Black box", "Combined", "Perlin", "Perlin m."))
+results_df$model <- factor(results_df$model, 
+                           levels=c("direct_excess_fraction/direct_excess_fraction", "basic_noise_model/basic_noise_model", "perlin_noise_model/perlin_noise_model"),
+                           labels=c("Direct method", "Basic noise model", "Perlin noise model"))
+
+mean_sd_df <- results_df %>%
+  group_by(model, noise_type) %>%
+  summarise(mean_loss = mean(loss, na.rm = TRUE),
+            sd_loss = sd(loss, na.rm = TRUE)) %>%
+  ungroup()
+
+mean_sd_df <- mean_sd_df %>%
+  pivot_wider(names_from = model, values_from = c(mean_loss, sd_loss), names_sep = "_") %>%
+  arrange(noise_type)
+
+write.csv(mean_sd_df, "mean_sd_results.csv", row.names = FALSE)
+mean_sd_df
+```
+
+## Prediction errors on sythetic data
+
+```{r}
+results_df %>% 
+  ggplot(aes(x = epsilon, y = diff, color = model)) +
+  geom_point(size=0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+  scale_color_manual(values=c("#D42726", "#F2A63E", "#2775AD")) +
+  scale_x_continuous(breaks=seq(0,1,0.25), labels=c("0.0", "", "0.5", "", "1.0")) +
+  scale_y_continuous(breaks=seq(-0.5,0.5,0.25), labels=c("-0.5", "", "0.0", "", "0.5"), limits = c(-0.6, 0.6)) +
+  labs(x = "Ground truth excess fraction ϵ",
+       y = "Prediction difference") +
+  facet_grid(noise_type ~ model) +
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        strip.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.spacing = unit(0.5, "lines"),
+        strip.text.x = element_text(size = 12, color = "black"),
+        strip.text.y = element_text(size = 12, color = "black"),
+        axis.title=element_text(size=14, color = "black"),
+        axis.text=element_text(size=11, color = "black"),
+        legend.position = "none")
+
+ggsave("comparison.png", dpi=400, width=8, height=8)
+```
+
+## Unwrapping ceramic data
+
+```{r}
+amplitude_unwrap <- function(signal, jump_threshold = 0.4) {
+      unwrapped_signal <- as.numeric(signal)
+      if (length(unwrapped_signal) < 2) return(unwrapped_signal)
+      for (i in 2:length(unwrapped_signal)) {
+         diff_val <- unwrapped_signal[i] - unwrapped_signal[i - 1]
+         if (abs(diff_val) > jump_threshold) {
+            unwrapped_signal[i:length(unwrapped_signal)] <- unwrapped_signal[i:length(unwrapped_signal)] - sign(diff_val)
+         }
+      }
+      unwrapped_signal
+}
+
+fit_cosine <- function(x, y, use_nls=TRUE, downsample_nls=8000, grid_factor=0.15) {
+      x <- as.numeric(x); y <- as.numeric(y)
+      n <- length(y)
+      if (n < 16) stop("Too few points for cosine fit")
+      y_center <- y - mean(y, na.rm=TRUE)
+      raw.fft <- fft(y_center)
+      half_n <- floor(n/2)
+      spec <- Mod(raw.fft[2:half_n])
+      k_peak <- which.max(spec) + 1
+      delta <- 0
+      if (k_peak > 2 && k_peak < half_n) {
+         a1 <- spec[k_peak-2]; a2 <- spec[k_peak-1]; a3 <- spec[k_peak]
+         denom <- (a1 - 2*a2 + a3)
+         if (denom != 0) delta <- 0.5*(a1 - a3)/denom
+      }
+      k_refined <- k_peak + delta
+      omega0 <- 2*pi * k_refined / n
+      if (!is.finite(omega0) || omega0 <= 0) omega0 <- 2*pi/n
+      span <- max(omega0*grid_factor, 4*pi/n)
+      grid_size <- 31
+      omega_grid <- seq(omega0 - span, omega0 + span, length.out=grid_size)
+      best <- list(sse=Inf, omega=omega0, a=NA, b=NA, C=NA)
+      one <- rep(1,n)
+      for (w in omega_grid) {
+         cvec <- cos(w * x); svec <- sin(w * x)
+         M <- cbind(cvec, svec, one)
+         cf <- tryCatch(.lm.fit(M, y)$coefficients, error=function(e) rep(NA_real_,3))
+         if (any(!is.finite(cf))) next
+         y_hat <- M %*% cf
+         sse <- sum((y - y_hat)^2)
+         if (sse < best$sse) best <- list(sse=sse, omega=w, a=cf[1], b=cf[2], C=cf[3], y_hat=as.numeric(y_hat))
+      }
+      A_lin <- sqrt(best$a^2 + best$b^2)
+      phi_lin <- atan2(-best$b, best$a)
+      final <- list(omega=best$omega, A=A_lin, phi=phi_lin, C=best$C, method="linear_grid", nls_model=NULL)
+      if (use_nls) {
+         if (n > downsample_nls) {
+            idx <- unique(round(seq(1, n, length.out=downsample_nls)))
+            xn <- x[idx]; yn <- y[idx]
+         } else { xn <- x; yn <- y }
+         df_n <- data.frame(x=xn, y=yn)
+         start_list <- list(A=A_lin, omega=best$omega, phi=phi_lin, C=best$C)
+         nls_fit <- try(suppressWarnings(nls(y ~ A * cos(omega * x + phi) + C, data=df_n,
+                                                               start=start_list, control=nls.control(maxiter=300, warnOnly=TRUE))), silent=TRUE)
+         if (!inherits(nls_fit, "try-error")) {
+            cf <- coef(nls_fit)
+            final <- list(omega=unname(cf["omega"]), A=unname(cf["A"]), phi=unname(cf["phi"]), C=unname(cf["C"]), method="nls_refined", nls_model=nls_fit)
+         }
+      }
+      y_fit <- final$A * cos(final$omega * x + final$phi) + final$C
+      final$y_fit <- y_fit
+      final$rmse <- sqrt(mean((y - y_fit)^2))
+      class(final) <- c("cosine_fit", class(final))
+      final
+   }
+```
+
+```{r}
+direct_excess_ceramic_df <- read.csv("../results/direct_excess_fraction/direct_excess_fraction_ceramic_predictions.csv") %>% 
+  mutate(Model = "Direct method")
+basic_model_deramic_df <- read.csv("../results/basic_noise_model/basic_noise_model_ceramic_predictions.csv") %>%
+  mutate(Model = "Basic noise model")
+perlin_model_ceramic_df <- read.csv("../results/perlin_noise_model/perlin_noise_model_ceramic_predictions.csv") %>%
+  mutate(Model = "Perlin noise model")
+
+df_ceramic <- rbind(direct_excess_ceramic_df, basic_model_deramic_df, perlin_model_ceramic_df) %>%
+  mutate(image = as.integer(sub(".png", "", filename)),
+         Model = factor(Model, levels = c("Direct method", "Basic noise model", "Perlin noise model")))
+
+df_ceramic$unwrapped <- 0
+df_ceramic[df_ceramic$Model == "Direct method", "unwrapped"] <- amplitude_unwrap(df_ceramic[df_ceramic$Model == "Direct method", "epsilon"])
+df_ceramic[df_ceramic$Model == "Basic noise model", "unwrapped"] <- amplitude_unwrap(df_ceramic[df_ceramic$Model == "Basic noise model", "epsilon"])
+df_ceramic[df_ceramic$Model == "Perlin noise model", "unwrapped"] <- amplitude_unwrap(df_ceramic[df_ceramic$Model == "Perlin noise model", "epsilon"])
+
+df_ceramic$cosine_fit <- 0
+df_ceramic[df_ceramic$Model == "Direct method", "cosine_fit"] <- fit_cosine(df_ceramic[df_ceramic$Model == "Direct method", "image"], df_ceramic[df_ceramic$Model == "Direct method", "unwrapped"])$y_fit
+df_ceramic[df_ceramic$Model == "Basic noise model", "cosine_fit"] <- fit_cosine(df_ceramic[df_ceramic$Model == "Basic noise model", "image"], df_ceramic[df_ceramic$Model == "Basic noise model", "unwrapped"])$y_fit
+df_ceramic[df_ceramic$Model == "Perlin noise model", "cosine_fit"] <- fit_cosine(df_ceramic[df_ceramic$Model == "Perlin noise model", "image"], df_ceramic[df_ceramic$Model == "Perlin noise model", "unwrapped"])$y_fit
+```
+
+```{r}
+ggplot(df_ceramic, aes(x = image, y = epsilon, color = Model)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "#888888") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "#888888") +
+  geom_point(shape=1, size=0.9) +
+  geom_line() + 
+  xlim(0, 100) +
+  labs(x = "Image index",
+       y = "Predicted excess fraction ϵ") +
+  scale_color_manual(values=c("#D42726", "#F2A63E", "#2775AD")) +
+  facet_grid(. ~ Model) + 
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        strip.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.spacing = unit(0.5, "lines"),
+        strip.text.x = element_text(size = 12, color = "black"),
+        strip.text.y = element_text(size = 12, color = "black"),
+        axis.title=element_text(size=14, color = "black"),
+        axis.text=element_text(size=11, color = "black"),
+        legend.position = "none")
+
+ggsave("wrapped_ceramic.png", dpi=400, width=8, height=3)
+ggsave("wrapped_ceramic.pdf", width=8, height=3)
+ggsave("wrapped_ceramic.svg", width=8, height=3)
+```
+
+```{r}
+ggplot(df_ceramic, aes(x = image, y = unwrapped, color = Model)) +
+  geom_line() + 
+  geom_line(aes(y = cosine_fit), linetype="dashed", color="black", linewidth=0.25) +
+  labs(x = "Image index",
+       y = "Unwrapped excess fraction ϵ") +
+  scale_color_manual(values=c("#D42726", "#F2A63E", "#2775AD")) +
+  scale_x_continuous(labels = label_number(scale_cut = cut_si("")),
+                     breaks = c(0, 5000, 10000, 15000, 20000)) +
+  facet_grid(. ~ Model) + 
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        strip.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.spacing = unit(0.5, "lines"),
+        strip.text.x = element_text(size = 12, color = "black"),
+        strip.text.y = element_text(size = 12, color = "black"),
+        axis.title=element_text(size=14, color = "black"),
+        axis.text=element_text(size=11, color = "black"),
+        legend.position = "none")
+
+ggsave("unwrapped_ceramic.png", dpi=400, width=8, height=3)
+ggsave("unwrapped_ceramic.pdf", width=8, height=3)
+ggsave("unwrapped_ceramic.svg", width=8, height=3)
+```
+
+
+## Unwrapping steel data
+
+```{r}
+direct_excess_steel_df <- read.csv("../results/direct_excess_fraction/direct_excess_fraction_steel_predictions.csv") %>% 
+  mutate(Model = "Direct method")
+basic_model_steel_df <- read.csv("../results/basic_noise_model/basic_noise_model_steel_predictions.csv") %>% 
+  mutate(Model = "Basic noise model")
+perlin_model_steel_df <- read.csv("../results/perlin_noise_model/perlin_noise_model_steel_predictions.csv") %>%
+  mutate(Model = "Perlin noise model")
+df_steel <- rbind(direct_excess_steel_df, basic_model_steel_df, perlin_model_steel_df) %>%
+  mutate(image = as.integer(sub(".png", "", filename)),
+         Model = factor(Model, levels = c("Direct method", "Basic noise model", "Perlin noise model")))
+
+df_steel$unwrapped <- 0
+df_steel[df_steel$Model == "Direct method", "unwrapped"] <- detrend(amplitude_unwrap(df_steel[df_steel$Model == "Direct method", "epsilon"]))
+df_steel[df_steel$Model == "Basic noise model", "unwrapped"] <- detrend(amplitude_unwrap(df_steel[df_steel$Model == "Basic noise model", "epsilon"]))
+df_steel[df_steel$Model == "Perlin noise model", "unwrapped"] <- detrend(amplitude_unwrap(df_steel[df_steel$Model == "Perlin noise model", "epsilon"]))
+
+df_steel$cosine_fit <- 0
+df_steel[df_steel$Model == "Direct method", "cosine_fit"] <- fit_cosine(df_steel[df_steel$Model == "Direct method", "image"], df_steel[df_steel$Model == "Direct method", "unwrapped"])$y_fit
+df_steel[df_steel$Model == "Basic noise model", "cosine_fit"] <- fit_cosine(df_steel[df_steel$Model == "Basic noise model", "image"], df_steel[df_steel$Model == "Basic noise model", "unwrapped"])$y_fit
+df_steel[df_steel$Model == "Perlin noise model", "cosine_fit"] <- fit_cosine(df_steel[df_steel$Model == "Perlin noise model", "image"], df_steel[df_steel$Model == "Perlin noise model", "unwrapped"])$y_fit
+```
+
+```{r}
+ggplot(df_steel, aes(x = image, y = epsilon, color = Model)) +
+  geom_hline(data=data.frame(image = 1), yintercept = 1, linetype = "dashed", color = "#888888", inherit.aes = F) +
+  geom_hline(data=data.frame(image = 1), yintercept = 0, linetype = "dashed", color = "#888888", inherit.aes = F) +
+  geom_point(shape=0, size=0.9) +
+  geom_line() + 
+  xlim(0, 100) +
+  labs(x = "Image index",
+       y = "Predicted excess fraction ϵ") +
+  scale_color_manual(values=c("#D42726", "#F2A63E", "#2775AD")) +
+  facet_grid(. ~ Model) + 
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        strip.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.spacing = unit(0.5, "lines"),
+        strip.text.x = element_text(size = 12, color = "black"),
+        strip.text.y = element_text(size = 12, color = "black"),
+        axis.title=element_text(size=14, color = "black"),
+        axis.text=element_text(size=11, color = "black"),
+        legend.position = "none")
+
+ggsave("wrapped_steel.png", dpi=400, width=8, height=3)
+ggsave("wrapped_steel.pdf", width=8, height=3)
+ggsave("wrapped_steel.svg", width=8, height=3)
+```
+
+```{r}
+ggplot(df_steel, aes(x = image, y = unwrapped, color = Model)) +
+  geom_rect(data=data.frame(image = 1), xmin=8000, xmax=10500, ymin=-Inf, ymax=Inf, fill="#EEEEEE", inherit.aes = F) +
+  geom_rect(data=data.frame(image = 1), xmin=26000, xmax=28500, ymin=-Inf, ymax=Inf, fill="#EEEEEE", inherit.aes = F) +
+  geom_rect(data=data.frame(image = 1), xmin=44000, xmax=46500, ymin=-Inf, ymax=Inf, fill="#EEEEEE", inherit.aes = F) +
+  geom_rect(data=data.frame(image = 1), xmin=62000, xmax=64500, ymin=-Inf, ymax=Inf, fill="#EEEEEE", inherit.aes = F) +
+  geom_rect(data=data.frame(image = 1), xmin=80000, xmax=82500, ymin=-Inf, ymax=Inf, fill="#EEEEEE", inherit.aes = F) +
+  geom_rect(data=data.frame(image = 1), xmin=98000, xmax=100500, ymin=-Inf, ymax=Inf, fill="#EEEEEE", inherit.aes = F) +
+  geom_line() + 
+  geom_line(aes(y = cosine_fit), linetype="dashed", color="black", linewidth=0.25) +
+  labs(x = "Image index",
+       y = "Unwrapped excess fraction ϵ") +
+  scale_color_manual(values=c("#D42726", "#F2A63E", "#2775AD")) +
+  scale_x_continuous(labels = label_number(scale_cut = cut_si(""))) +
+  facet_grid(. ~ Model) + 
+  theme(panel.background = element_rect(fill = "white", colour = "black"),
+        strip.background = element_rect(fill = "white", colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.spacing = unit(0.5, "lines"),
+        strip.text.x = element_text(size = 12, color = "black"),
+        strip.text.y = element_text(size = 12, color = "black"),
+        axis.title=element_text(size=14, color = "black"),
+        axis.text=element_text(size=11, color = "black"),
+        legend.position = "none")
+
+ggsave("unwrapped_detrend_steel.png", dpi=400, width=8, height=3)
+ggsave("unwrapped_detrend_steel.pdf", width=8, height=3)
+ggsave("unwrapped_detrend_steel.svg", width=8, height=3)
+```
+
